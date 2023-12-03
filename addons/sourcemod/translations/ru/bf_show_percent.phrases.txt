@@ -22,29 +22,29 @@
 
 	"STATIC"
 	{
-		"en"			"static"
+		"en"			"статично"
 	}
 
 	"DISABLE"
 	{
-		"en"			"disable"
+		"en"			"отключен"
 	}
 
 	"TANK_FLOW"
 	{
 		"#format"		"{1:s},{2:s}"
-		"en"			"{olive}Танк{default} {1}%% (заспавнится на {2}%%)"
+		"en"			"{olive}Танк{default} {1} (спавн {2})"
 	}
 
 	"WITCH_FLOW"
 	{
 		"#format"		"{1:s},{2:s}"
-		"en"			"{olive}Ведьма{default} {1}%% (Заспавнится на {2}%%)"
+		"en"			"{olive}Ведьма{default} {1} (спавн {2})"
 	}
 
 	"SURVIVOR_FLOW"
 	{
 		"#format"		"{1:d}"
-		"en"			"{blue}Выжившие{default} прошли {1}%%"
+		"en"			"{blue}Выжившие{default} прошли {1}"
 	}
 }
