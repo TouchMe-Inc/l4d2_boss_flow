@@ -3,6 +3,11 @@
 #endif
 #define _boss_flow_included
 
+
+native bool IsTankSpawnAllow();
+
+native bool IsWitchSpawnAllow();
+
 /**
  * @brief Check if the current map contains a static witch spawn.
  * @remarks Map string will be converted to lowercase internally.
@@ -73,6 +78,8 @@ public SharedPlugin __pl_boss_flow =
 #if !defined REQUIRE_PLUGIN
 public void __pl_boss_flow_SetNTVOptional()
 {
+	MarkNativeAsOptional("IsTankSpawnAllow");
+	MarkNativeAsOptional("IsWitchSpawnAllow");
 	MarkNativeAsOptional("IsStaticWitchMap");
 	MarkNativeAsOptional("IsStaticTankMap");
 	MarkNativeAsOptional("IsValidTankFlowPercent");

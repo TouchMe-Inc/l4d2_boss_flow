@@ -30,8 +30,8 @@ Handle
 
 ConVar
 	g_cvPathToDir = null,
-	g_cvAllowTankSpawn = null,
-	g_cvAllowWitchSpawn = null
+	g_cvTankSpawnAllow = null,
+	g_cvWitchSpawnAllow = null
 ;
 
 ConVar
@@ -59,6 +59,8 @@ public APLRes AskPluginLoad2(Handle myself, bool bLate, char[] sErr, int iErrLen
 		return APLRes_SilentFailure;
 	}
 
+	CreateNative("IsTankSpawnAllow", Native_IsTankSpawnAllow);
+	CreateNative("IsWitchSpawnAllow", Native_IsWitchSpawnAllow);
 	CreateNative("IsStaticTankMap", Native_IsStaticTankMap);
 	CreateNative("IsStaticWitchMap", Native_IsStaticWitchMap);
 	CreateNative("IsValidTankFlowPercent", Native_IsValidTankFlowPercent);
@@ -69,6 +71,14 @@ public APLRes AskPluginLoad2(Handle myself, bool bLate, char[] sErr, int iErrLen
 	RegPluginLibrary("boss_flow");
 
 	return APLRes_Success;
+}
+
+public int Native_IsTankSpawnAllow(Handle plugin, int numParams) {
+	return GetConVarBool(g_cvTankSpawnAllow);
+}
+	
+public int Native_IsWitchSpawnAllow(Handle plugin, int numParams) {
+	return GetConVarBool(g_cvWitchSpawnAllow);
 }
 
 public int Native_IsStaticTankMap(Handle plugin, int numParams) {
@@ -156,8 +166,8 @@ public void OnPluginStart()
 	g_hStaticWitchMaps = CreateTrie();
 
 	g_cvPathToDir = CreateConVar("sm_boss_flow_path_to_dir", "addons/sourcemod/configs/boss_flow");
-	g_cvAllowTankSpawn = CreateConVar("sm_allow_tank_spawn", "1", "Allow tank spawn", _, true, 0.0, true, 1.0);
-	g_cvAllowWitchSpawn = CreateConVar("sm_allow_witch_spawn", "1", "Allow witch spawn", _, true, 0.0, true, 1.0);
+	g_cvTankSpawnAllow = CreateConVar("sm_tank_spawn_allow", "1", "Allow tank spawn", _, true, 0.0, true, 1.0);
+	g_cvWitchSpawnAllow = CreateConVar("sm_witch_spawn_allow", "1", "Allow witch spawn", _, true, 0.0, true, 1.0);
 
 	g_cvVsBossFlowMin = FindConVar("versus_boss_flow_min");
 	g_cvVsBossFlowMax = FindConVar("versus_boss_flow_max");
@@ -168,15 +178,15 @@ public void OnPluginStart()
 }
 
 public Action L4D_OnSpawnTank(const float vPos[3], const float vAng[3]) {
-	return GetConVarBool(g_cvAllowTankSpawn) ? Plugin_Continue : Plugin_Handled;
+	return GetConVarBool(g_cvTankSpawnAllow) ? Plugin_Continue : Plugin_Handled;
 }
 
 public Action L4D_OnSpawnWitch(const float vPos[3], const float vAng[3]) {
-	return GetConVarBool(g_cvAllowWitchSpawn) ? Plugin_Continue : Plugin_Handled;
+	return GetConVarBool(g_cvWitchSpawnAllow) ? Plugin_Continue : Plugin_Handled;
 }
 
 public Action L4D2_OnSpawnWitchBride(const float vPos[3], const float vAng[3]) {
-	return GetConVarBool(g_cvAllowWitchSpawn) ? Plugin_Continue : Plugin_Handled;
+	return GetConVarBool(g_cvWitchSpawnAllow) ? Plugin_Continue : Plugin_Handled;
 }
 
 Action Cmd_AddStaticTankMap(int args)

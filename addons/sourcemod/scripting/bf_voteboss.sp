@@ -18,10 +18,15 @@ public Plugin myinfo =
 }
 
 
+#define TRANSLATIONS            "bf_voteboss.phrases"
+
+/*
+ * Libs.
+ */
+#define LIB_READY               "readyup"
+
 #define MIN_FLOW 1
 #define MAX_FLOW 100
-
-#define TRANSLATIONS            "bf_voteboss.phrases"
 
 #define TEAM_SPECTATE           1
 
@@ -33,8 +38,50 @@ int
 	g_iWitchPercent = 0
 ;
 
-bool g_bRoundIsLive = false;
+bool
+	g_bRoundIsLive = false,
+	g_bReadyUpAvailable = false
+;
 
+
+/**
+  * Global event. Called when all plugins loaded.
+  */
+public void OnAllPluginsLoaded() {
+	g_bReadyUpAvailable = LibraryExists(LIB_READY);
+}
+
+/**
+  * Global event. Called when a library is removed.
+  *
+  * @param sName     Library name
+  */
+public void OnLibraryRemoved(const char[] sName)
+{
+	if (StrEqual(sName, LIB_READY)) {
+		g_bReadyUpAvailable = false;
+	}
+}
+
+/**
+  * Global event. Called when a library is added.
+  *
+  * @param sName     Library name
+  */
+public void OnLibraryAdded(const char[] sName)
+{
+	if (StrEqual(sName, LIB_READY)) {
+		g_bReadyUpAvailable = true;
+	}
+}
+
+/**
+  * @requared readyup
+  * Global event. Called when all players are ready.
+  */
+public void OnRoundIsLive() {
+	g_bRoundIsLive = true;
+}
 
 /**
  * Called before OnPluginStart.
@@ -81,8 +128,15 @@ void Event_RoundStart(Event event, const char[] sName, bool bDontBroadcast) {
 /**
  * Round start event.
  */
-void Event_LeftStartArea(Event event, const char[] sName, bool bDontBroadcast) {
+Action Event_LeftStartArea(Event event, const char[] sName, bool bDontBroadcast)
+{
+	if (g_bReadyUpAvailable) {
+		return Plugin_Continue;
+	}
+
 	g_bRoundIsLive = true;
+
+	return Plugin_Continue;
 }
 
 /**
@@ -125,8 +179,8 @@ Action Cmd_VoteBoss(int iClient, int iArgs)
 	char sTankPercent[4]; GetCmdArg(1, sTankPercent, sizeof(sTankPercent));
 	char sWitchPercent[4]; GetCmdArg(2, sWitchPercent, sizeof(sWitchPercent));
 
-	int iTankPercent = sTankPercent[0] == '-' ? -1 : 0;
-	int iWitchPercent = sWitchPercent[0] == '-' ? -1 : 0;
+	int iTankPercent = (sTankPercent[0] == '-' || !IsTankSpawnAllow()) ? -1 : 0;
+	int iWitchPercent = (sWitchPercent[0] == '-' || !IsWitchSpawnAllow()) ? -1 : 0;
 
 	char sErrorMessage[192];
 
@@ -258,7 +312,7 @@ Action HandlerVoteBoss(NativeVote hVote, VoteAction tAction, int iParam1, int iP
 			} else if (g_iTankPercent == 0) {
 				FormatEx(sTankPercent, sizeof(sTankPercent), "%T", "DISABLE", iParam1);
 			} else {
-				FormatEx(sTankPercent, sizeof(sTankPercent), "%T", "PERCENT", iParam1, g_iTankPercent);
+				FormatEx(sTankPercent, sizeof(sTankPercent), "%d", g_iTankPercent);
 			}
 
 			if (g_iWitchPercent == -1) {
@@ -268,7 +322,7 @@ Action HandlerVoteBoss(NativeVote hVote, VoteAction tAction, int iParam1, int iP
 			} else if (g_iWitchPercent == 0) {
 				FormatEx(sWitchPercent, sizeof(sWitchPercent), "%T", "DISABLE", iParam1);
 			} else {
-				FormatEx(sWitchPercent, sizeof(sWitchPercent), "%T", "PERCENT", iParam1, g_iWitchPercent);
+				FormatEx(sWitchPercent, sizeof(sWitchPercent), "%d", g_iWitchPercent);
 			}
 
 			FormatEx(sVoteDisplayMessage, sizeof(sVoteDisplayMessage), "%T", "VOTE_TITLE", iParam1, sTankPercent, sWitchPercent);

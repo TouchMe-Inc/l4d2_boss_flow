@@ -1,0 +1,50 @@
+"Phrases"
+{
+	"BRACKET_START"
+	{
+		"en"			"┌ "
+	}
+
+	"BRACKET_MIDDLE"
+	{
+		"en"			"├ "
+	}
+
+	"BRACKET_END"
+	{
+		"en"			"└ "
+	}
+
+	"TAG"
+	{
+		"en"			"<{green}Boss Percent{default}> "
+	}
+
+	"STATIC"
+	{
+		"en"			"static"
+	}
+
+	"DISABLE"
+	{
+		"en"			"disable"
+	}
+
+	"TANK_FLOW"
+	{
+		"#format"		"{1:s},{2:s}"
+		"en"			"{olive}Tank{default} {1}%% (spawn {2}%%)"
+	}
+
+	"WITCH_FLOW"
+	{
+		"#format"		"{1:s},{2:s}"
+		"en"			"{olive}Witch{default} {1}%% (spawn {2}%%)"
+	}
+
+	"SURVIVOR_FLOW"
+	{
+		"#format"		"{1:d}"
+		"en"			"{blue}Survivors{default} are now {1}%%"
+	}
+}

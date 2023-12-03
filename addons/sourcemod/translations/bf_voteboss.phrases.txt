@@ -84,7 +84,6 @@
 		"en"			"ignored"
 	}
 
-
 	"STATIC"
 	{
 		"en"			"static"
@@ -93,11 +92,5 @@
 	"DISABLE"
 	{
 		"en"			"disable"
-	}
-
-	"PERCENT"
-	{
-		"#format"		"{1:d}"
-		"en"			"{1}"
 	}
 }
