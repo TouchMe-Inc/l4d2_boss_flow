@@ -5,7 +5,7 @@
 public Plugin myinfo =
 {
 	name = "BossFlow",
-	author = "TouchMe",
+	author = "CanadaRox, TouchMe",
 	description = "Manipulating boss spawns",
 	version = "build0000",
 	url = "https://github.com/TouchMe-Inc/l4d2_boss_flow"
