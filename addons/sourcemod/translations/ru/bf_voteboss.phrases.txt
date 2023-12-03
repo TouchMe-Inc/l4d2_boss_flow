@@ -1,0 +1,96 @@
+"Phrases"
+{
+	"BRACKET_START"
+	{
+		"en"			"┌ "
+	}
+
+	"BRACKET_MIDDLE"
+	{
+		"en"			"├ "
+	}
+
+	"BRACKET_END"
+	{
+		"en"			"└ "
+	}
+
+	"TAG"
+	{
+		"en"			"<{green}Vote Boss{default}> "
+	}
+
+	"ROUND_STARTED"
+	{
+		"en"			"Голосование доступно только до начала раунда"
+	}
+
+	"INVALID_TEAM"
+	{
+		"en"			"{olive}Наблюдатели{default} не могут запустить голосование"
+	}
+
+	"INVALID_ARGS"
+	{
+		"en"			"Внимание! Используйте {olive}!voteboss <tank> <witch>"
+	}
+
+	"INVALID_ROUND"
+	{
+		"en"			"Команда доступна только в первом раунде"
+	}
+
+	"INVALID_TANK_PERCENT"
+	{
+		"en"			"Размещение танка возможно на промежутке от 1 до 100"
+	}
+
+	"INVALID_TANK_FLOW"
+	{
+		"#format"		"{1:d}"
+		"en"			"Размещение танка в точке {olive}{1}{default} запрещено настройками сервера"
+	}
+
+	"INVALID_WITCH_PERCENT"
+	{
+		"en"			"Размещение ведьмы возможно на промежутке от 1 до 100"
+	}
+
+	"INVALID_WITCH_FLOW"
+	{
+		"#format"		"{1:d}"
+		"en"			"Размещение ведьмы в точке {olive}{1}{default} запрещено настройками сервера"
+	}
+
+	"INVALID_BOSS_POINT"
+	{
+		"en"			"Невозможно разместить боссов в одной точке"
+	}
+
+	"VOTE_COULDOWN"
+	{
+		"#format"		"{1:d}"
+		"en"			" данный момент невозможно начать голосование. Повторите попытку через {1} секунд"
+	}
+
+	"VOTE_TITLE"
+	{
+		"#format"		"{1:s},{2:s}"
+		"en"			"Размещение Танка {1} и Ведьмы {2}"
+	}
+
+	"IGNORED"
+	{
+		"en"			"игнорировать"
+	}
+
+	"STATIC"
+	{
+		"en"			"статично"
+	}
+
+	"DISABLE"
+	{
+		"en"			"отключено"
+	}
+}
