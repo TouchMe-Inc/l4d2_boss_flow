@@ -1,0 +1,60 @@
+"Phrases"
+{
+	"BRACKET_START"
+	{
+		"en"			"┌ "
+	}
+
+	"BRACKET_MIDDLE"
+	{
+		"en"			"├ "
+	}
+
+	"BRACKET_END"
+	{
+		"en"			"└ "
+	}
+
+	"TAG"
+	{
+		"en"			"<{green}Boss Percent{default}> "
+	}
+
+	"TANK_STATIC"
+	{
+		"en"			"{olive}Tank{default} static"
+	}
+
+	"TANK_DISABLED"
+	{
+		"en"			"{olive}Tank{default} disabled"
+	}
+
+	"TANK_FLOW"
+	{
+		"#format"		"{1:d},{2:d}"
+		"en"			"{olive}Tank{default} {2}%% (Init {1}%%)"
+	}
+
+	"WITCH_STATIC"
+	{
+		"en"			"{olive}Witch{default} static"
+	}
+
+	"WITCH_DISABLED"
+	{
+		"en"			"{olive}Witch{default} disabled"
+	}
+
+	"WITCH_FLOW"
+	{
+		"#format"		"{1:d},{2:d}"
+		"en"			"{olive}Witch{default} {2}%%"
+	}
+
+	"SURVIVOR_FLOW"
+	{
+		"#format"		"{1:d}"
+		"en"			"{blue}Survivors{default} are now {1}%%"
+	}
+}

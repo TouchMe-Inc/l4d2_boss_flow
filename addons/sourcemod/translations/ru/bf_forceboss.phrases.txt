@@ -1,0 +1,96 @@
+"Phrases"
+{
+	"BRACKET_START"
+	{
+		"ru"			"┌ "
+	}
+
+	"BRACKET_MIDDLE"
+	{
+		"ru"			"├ "
+	}
+
+	"BRACKET_END"
+	{
+		"ru"			"└ "
+	}
+
+	"TAG"
+	{
+		"ru"			"<{green}Force Boss{default}> "
+	}
+
+	"ROUND_STARTED"
+	{
+		"ru"			"Голосование доступно только до начала раунда"
+	}
+
+	"INVALID_TEAM"
+	{
+		"ru"			"{olive}Наблюдатели{default} не могут запустить голосование"
+	}
+
+	"INVALID_ARGS"
+	{
+		"ru"			"Внимание! Используйте {olive}!forceboss <tank> <witch>"
+	}
+
+	"INVALID_ROUND"
+	{
+		"ru"			"Команда доступна только в первом раунде"
+	}
+
+	"INVALID_TANK_PERCENT"
+	{
+		"ru"			"Размещение танка возможно на промежутке от 1 до 100"
+	}
+
+	"INVALID_TANK_FLOW"
+	{
+		"#format"		"{1:d}"
+		"ru"			"Размещение танка на {olive}{1}%%{default} запрещено настройками сервера"
+	}
+
+	"INVALID_WITCH_PERCENT"
+	{
+		"ru"			"Размещение ведьмы возможно на промежутке от 1 до 100"
+	}
+
+	"INVALID_WITCH_FLOW"
+	{
+		"#format"		"{1:d}"
+		"ru"			"Размещение ведьмы на {olive}{1}%%{default} запрещено настройками сервера"
+	}
+
+	"INVALID_BOSS_POINT"
+	{
+		"ru"			"Невозможно разместить боссов в одной точке"
+	}
+
+	"IGNORED"
+	{
+		"ru"			"игнорировать"
+	}
+
+	"STATIC"
+	{
+		"ru"			"статично"
+	}
+
+	"DISABLE"
+	{
+		"ru"			"выключено"
+	}
+
+	"PERCENT"
+	{
+		"#format"		"{1:d}"
+		"ru"			"{1}%%"
+	}
+
+	"ADMIN_FLOW_UPDATE"
+	{
+		"#format"		"{1:N},{2:s},{3:s}"
+		"ru"			"Администратор {1} установил спавны боссов: Танк {2} и Ведьма {3}"
+	}
+}

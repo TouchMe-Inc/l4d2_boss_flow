@@ -1,0 +1,60 @@
+"Phrases"
+{
+	"BRACKET_START"
+	{
+		"ru"			"┌ "
+	}
+
+	"BRACKET_MIDDLE"
+	{
+		"ru"			"├ "
+	}
+
+	"BRACKET_END"
+	{
+		"ru"			"└ "
+	}
+
+	"TAG"
+	{
+		"ru"			"<{green}Boss Percent{default}> "
+	}
+
+	"TANK_STATIC"
+	{
+		"ru"			"{olive}Танк{default} статичный"
+	}
+
+	"TANK_DISABLED"
+	{
+		"ru"			"{olive}Танка{default} нет"
+	}
+
+	"TANK_FLOW"
+	{
+		"#format"		"{1:d},{2:d}"
+		"ru"			"{olive}Танк{default} {2}%% (Init {1}%%)"
+	}
+
+	"WITCH_STATIC"
+	{
+		"ru"			"{olive}Ведьма{default} статична"
+	}
+
+	"WITCH_DISABLED"
+	{
+		"ru"			"{olive}Ведьмы{default} нет"
+	}
+
+	"WITCH_FLOW"
+	{
+		"#format"		"{1:d},{2:d}"
+		"ru"			"{olive}Ведьма{default} {2}%%"
+	}
+
+	"SURVIVOR_FLOW"
+	{
+		"#format"		"{1:d}"
+		"ru"			"{blue}Выжившие{default} прошли {1}%%"
+	}
+}

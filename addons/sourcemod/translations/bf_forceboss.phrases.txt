@@ -1,0 +1,96 @@
+"Phrases"
+{
+	"BRACKET_START"
+	{
+		"en"			"┌ "
+	}
+
+	"BRACKET_MIDDLE"
+	{
+		"en"			"├ "
+	}
+
+	"BRACKET_END"
+	{
+		"en"			"└ "
+	}
+
+	"TAG"
+	{
+		"en"			"<{green}Force Boss{default}> "
+	}
+
+	"ROUND_STARTED"
+	{
+		"en"			"Voting is available before the start of the round"
+	}
+
+	"INVALID_TEAM"
+	{
+		"en"			"{olive}Spectators{default} cannot start voting"
+	}
+
+	"INVALID_ARGS"
+	{
+		"en"			"Attention! Use {olive}!forceboss <tank> <witch>"
+	}
+
+	"INVALID_ROUND"
+	{
+		"en"			"The command is only available in the first round"
+	}
+
+	"INVALID_TANK_PERCENT"
+	{
+		"en"			"To set a tank percentage, numbers from 1 to 100 are available"
+	}
+
+	"INVALID_TANK_FLOW"
+	{
+		"#format"		"{1:d}"
+		"en"			"Placing a tank at point {olive}{1}{default} is prohibited by server rules"
+	}
+
+	"INVALID_WITCH_PERCENT"
+	{
+		"en"			"To set a witch percentage, numbers from 1 to 100 are available"
+	}
+
+	"INVALID_WITCH_FLOW"
+	{
+		"#format"		"{1:d}"
+		"en"			"Placing a witch at point {olive}{1}{default} is prohibited by server rules"
+	}
+
+	"INVALID_BOSS_POINT"
+	{
+		"en"			"It is impossible to place bosses at one point"
+	}
+
+	"IGNORED"
+	{
+		"en"			"ignored"
+	}
+
+	"STATIC"
+	{
+		"en"			"static"
+	}
+
+	"DISABLE"
+	{
+		"en"			"disable"
+	}
+
+	"PERCENT"
+	{
+		"#format"		"{1:d}"
+		"en"			"{1}%%"
+	}
+
+	"ADMIN_FLOW_UPDATE"
+	{
+		"#format"		"{1:N},{2:s},{3:s}"
+		"en"			"Administrator {1} set boss spawns: Tank {2} and Witch {3}"
+	}
+}
