@@ -30,16 +30,22 @@
 		"en"			"disable"
 	}
 
+	"PERCENT"
+	{
+		"#format"		"{1:d}"
+		"en"			"{1}%%"
+	}
+
 	"TANK_FLOW"
 	{
 		"#format"		"{1:s},{2:s}"
-		"en"			"{olive}Tank{default} {1}%% (spawn {2}%%)"
+		"en"			"{olive}Tank{default} {1} (spawn {2})"
 	}
 
 	"WITCH_FLOW"
 	{
 		"#format"		"{1:s},{2:s}"
-		"en"			"{olive}Witch{default} {1}%% (spawn {2}%%)"
+		"en"			"{olive}Witch{default} {1} (spawn {2})"
 	}
 
 	"SURVIVOR_FLOW"

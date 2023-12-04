@@ -2,49 +2,55 @@
 {
 	"BRACKET_START"
 	{
-		"en"			"┌ "
+		"ru"			"┌ "
 	}
 
 	"BRACKET_MIDDLE"
 	{
-		"en"			"├ "
+		"ru"			"├ "
 	}
 
 	"BRACKET_END"
 	{
-		"en"			"└ "
+		"ru"			"└ "
 	}
 
 	"TAG"
 	{
-		"en"			"<{green}Boss Percent{default}> "
+		"ru"			"<{green}Boss Percent{default}> "
 	}
 
 	"STATIC"
 	{
-		"en"			"статично"
+		"ru"			"статично"
 	}
 
 	"DISABLE"
 	{
-		"en"			"отключен"
+		"ru"			"отключен"
+	}
+
+	"PERCENT"
+	{
+		"#format"		"{1:d}"
+		"ru"			"{1}%%"
 	}
 
 	"TANK_FLOW"
 	{
 		"#format"		"{1:s},{2:s}"
-		"en"			"{olive}Танк{default} {1} (спавн {2})"
+		"ru"			"{olive}Танк{default} {1} (спавн {2})"
 	}
 
 	"WITCH_FLOW"
 	{
 		"#format"		"{1:s},{2:s}"
-		"en"			"{olive}Ведьма{default} {1} (спавн {2})"
+		"ru"			"{olive}Ведьма{default} {1} (спавн {2})"
 	}
 
 	"SURVIVOR_FLOW"
 	{
 		"#format"		"{1:d}"
-		"en"			"{blue}Выжившие{default} прошли {1}"
+		"ru"			"{blue}Выжившие{default} прошли {1}%%"
 	}
 }

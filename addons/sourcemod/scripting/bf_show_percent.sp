@@ -54,6 +54,9 @@ public void OnPluginStart()
 	g_cvVsBossBuffer = FindConVar("versus_boss_buffer");
 
 	RegConsoleCmd("sm_boss", Cmd_Boss);
+	RegConsoleCmd("sm_tank", Cmd_Boss);
+	RegConsoleCmd("sm_witch", Cmd_Boss);
+	RegConsoleCmd("sm_current", Cmd_Boss);
 }
 
 /**
@@ -93,8 +96,8 @@ Action Cmd_Boss(int iClient, int iArgs)
 		
 		else
 		{
-			FormatEx(sTankPercent, sizeof(sTankPercent), "%d", iTankPercent);
-			FormatEx(sTankTriggerPercent, sizeof(sTankTriggerPercent), "%d", iTankTriggerPercent);
+			FormatEx(sTankPercent, sizeof(sTankPercent), "%T", "PERCENT", iClient, iTankPercent);
+			FormatEx(sTankTriggerPercent, sizeof(sTankTriggerPercent), "%T", "PERCENT", iClient, iTankTriggerPercent);
 		}
 
 		CPrintToChat(iClient, "%s%T", sBracketMiddle, "TANK_FLOW", iClient, sTankTriggerPercent, sTankPercent);
@@ -121,8 +124,8 @@ Action Cmd_Boss(int iClient, int iArgs)
 		
 		else
 		{
-			FormatEx(sWitchPercent, sizeof(sWitchPercent), "%d", iWitchPercent);
-			FormatEx(sWitchTriggerPercent, sizeof(sWitchTriggerPercent), "%d", iWitchTriggerPercent);
+			FormatEx(sWitchPercent, sizeof(sWitchPercent), "%T", "PERCENT", iClient, iWitchPercent);
+			FormatEx(sWitchTriggerPercent, sizeof(sWitchTriggerPercent), "%T", "PERCENT", iClient, iWitchTriggerPercent);
 		}
 	
 		CPrintToChat(iClient, "%s%T", sBracketMiddle, "WITCH_FLOW", iClient, sWitchTriggerPercent, sWitchPercent);
