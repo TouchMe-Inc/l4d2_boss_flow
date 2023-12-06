@@ -12,8 +12,8 @@ public Plugin myinfo =
 {
 	name = "BossFlowShowPercent",
 	author = "TouchMe",
-	description = "N/a",
-	version = "build0000",
+	description = "Plugin displays boss locations",
+	version = "build0001",
 	url = "https://github.com/TouchMe-Inc/l4d2_boss_flow"
 }
 
@@ -119,7 +119,7 @@ Action Cmd_Boss(int iClient, int iArgs)
 		else if (iWitchPercent == 0)
 		{
 			FormatEx(sWitchPercent, sizeof(sWitchPercent), "%T", "DISABLE", iClient);
-			FormatEx(sWitchTriggerPercent, sizeof(sWitchTriggerPercent), "%T", "STATIC", iClient);
+			FormatEx(sWitchTriggerPercent, sizeof(sWitchTriggerPercent), "%T", "DISABLE", iClient);
 		}
 		
 		else
