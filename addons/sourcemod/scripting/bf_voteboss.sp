@@ -10,7 +10,7 @@
 
 public Plugin myinfo =
 {
-	name = "BossFlowVote",
+	name = "BossFlowVoteBoss",
 	author = "TouchMe",
 	description = "The plugin allows you to vote for the position of bosses",
 	version = "build0000",
@@ -345,7 +345,7 @@ Action HandlerVoteBoss(NativeVote hVote, VoteAction tAction, int iParam1, int iP
 				return Plugin_Continue;
 			}
 
-			if (g_iTankPercent != -1 && !IsStaticWitchMap()) {
+			if (g_iTankPercent != -1 && !IsStaticTankMap()) {
 				SetTankFlowPercent(g_iTankPercent);
 			}
 
