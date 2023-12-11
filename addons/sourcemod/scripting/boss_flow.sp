@@ -5,7 +5,7 @@
 public Plugin myinfo =
 {
 	name = "BossFlow",
-	author = "CanadaRox, TouchMe",
+	author = "TouchMe",
 	description = "Manipulating boss spawns",
 	version = "build0000",
 	url = "https://github.com/TouchMe-Inc/l4d2_boss_flow"
@@ -320,7 +320,7 @@ void SetTankFlowPercent(int iFlow)
 	L4D2Direct_SetVSTankFlowPercent(0, fPersent);
 	L4D2Direct_SetVSTankFlowPercent(1, fPersent);
 
-	bool bCanSpawn = view_as<bool>(iFlow);
+	bool bCanSpawn = (iFlow > 0);
 
 	L4D2Direct_SetVSTankToSpawnThisRound(0, bCanSpawn);
 	L4D2Direct_SetVSTankToSpawnThisRound(1, bCanSpawn);
@@ -333,7 +333,7 @@ void SetWitchFlowPercent(int iFlow)
 	L4D2Direct_SetVSWitchFlowPercent(0, fPersent);
 	L4D2Direct_SetVSWitchFlowPercent(1, fPersent);
 
-	bool bCanSpawn = view_as<bool>(iFlow);
+	bool bCanSpawn = (iFlow > 0);
 
 	L4D2Direct_SetVSWitchToSpawnThisRound(0, bCanSpawn);
 	L4D2Direct_SetVSWitchToSpawnThisRound(1, bCanSpawn);
