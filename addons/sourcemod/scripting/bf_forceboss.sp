@@ -106,7 +106,7 @@ public void OnPluginStart()
 	HookEvent("round_end", Event_RoundEnd, EventHookMode_PostNoCopy);
 
 	// Player Commands.
-	RegAdminCmd("sm_forceboss", Cmd_FirceBoss, ADMFLAG_BAN,  "Gives the tank to a selected player");
+	RegAdminCmd("sm_forceboss", Cmd_ForceBoss, ADMFLAG_BAN,  "Gives the tank to a selected player");
 }
 
 /**
@@ -140,7 +140,7 @@ void Event_RoundEnd(Event event, const char[] sName, bool bDontBroadcast) {
 /**
  * Give the tank to a specific player.
  */
-Action Cmd_FirceBoss(int iClient, int iArgs)
+Action Cmd_ForceBoss(int iClient, int iArgs)
 {
 	if (iArgs != 2)
 	{
