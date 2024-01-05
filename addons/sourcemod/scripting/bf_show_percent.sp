@@ -2,7 +2,6 @@
 #pragma newdecls                required
 
 #include <sourcemod>
-#include <sdktools>
 #include <left4dhooks>
 #include <boss_flow>
 #include <colors>
@@ -35,9 +34,7 @@ ConVar g_cvVsBossBuffer = null;
  */
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-	EngineVersion engine = GetEngineVersion();
-
-	if (engine != Engine_Left4Dead2)
+	if (GetEngineVersion() != Engine_Left4Dead2)
 	{
 		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
 		return APLRes_SilentFailure;
@@ -65,8 +62,6 @@ public void OnPluginStart()
  */
 Action Cmd_Boss(int iClient, int iArgs)
 {
-	int iRound = InSecondHalfOfRound() ? 1 : 0;
-
 	float fBossBuffer = GetConVarFloat(g_cvVsBossBuffer) / L4D2Direct_GetMapMaxFlowDistance();
 
 	char sBracketStart[16]; FormatEx(sBracketStart, sizeof(sBracketStart), "%T", "BRACKET_START", iClient);
@@ -79,7 +74,7 @@ Action Cmd_Boss(int iClient, int iArgs)
 	{
 		char sTankPercent[32], sTankTriggerPercent[32];
 
-		int iTankPercent = RoundToNearest(L4D2Direct_GetVSTankFlowPercent(iRound) * 100.0);
+		int iTankPercent = GetTankFlowPercent();
 		int iTankTriggerPercent = iTankPercent - RoundToNearest(fBossBuffer * 100.0);
 
 		if (IsStaticTankMap())
@@ -107,7 +102,7 @@ Action Cmd_Boss(int iClient, int iArgs)
 	{
 		char sWitchPercent[32], sWitchTriggerPercent[32];
 
-		int iWitchPercent = RoundToNearest( L4D2Direct_GetVSWitchFlowPercent(iRound) * 100.0);
+		int iWitchPercent = GetWitchFlowPercent();
 		int iWitchTriggerPercent = iWitchPercent - RoundToNearest(fBossBuffer * 100.0);
 
 		if (IsStaticWitchMap())
@@ -134,15 +129,6 @@ Action Cmd_Boss(int iClient, int iArgs)
 	CPrintToChat(iClient, "%s%T", sBracketEnd, "SURVIVOR_FLOW", iClient, GetFurthestSurvivorFlowPercent());
 
 	return Plugin_Handled;
-}
-
-/**
- * Checks if the current round is the second.
- *
- * @return                  Returns true if is second round, otherwise false.
- */
-bool InSecondHalfOfRound() {
-	return view_as<bool>(GameRules_GetProp("m_bInSecondHalfOfRound"));
 }
 
 int GetFurthestSurvivorFlowPercent()

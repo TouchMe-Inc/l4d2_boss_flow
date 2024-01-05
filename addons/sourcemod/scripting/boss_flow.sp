@@ -51,9 +51,7 @@ ConVar
  */
 public APLRes AskPluginLoad2(Handle myself, bool bLate, char[] sErr, int iErrLen)
 {
-	EngineVersion engine = GetEngineVersion();
-
-	if (engine != Engine_Left4Dead2)
+	if (GetEngineVersion() != Engine_Left4Dead2)
 	{
 		strcopy(sErr, iErrLen, "Plugin only supports Left 4 Dead 2");
 		return APLRes_SilentFailure;
@@ -66,7 +64,9 @@ public APLRes AskPluginLoad2(Handle myself, bool bLate, char[] sErr, int iErrLen
 	CreateNative("IsValidTankFlowPercent", Native_IsValidTankFlowPercent);
 	CreateNative("IsValidWitchFlowPercent", Native_IsValidWitchFlowPercent);
 	CreateNative("SetTankFlowPercent", Native_SetTankFlowPercent);
+	CreateNative("GetTankFlowPercent", Native_GetTankFlowPercent);
 	CreateNative("SetWitchFlowPercent", Native_SetWitchFlowPercent);
+	CreateNative("GetWitchFlowPercent", Native_GetWitchFlowPercent);
 
 	RegPluginLibrary("boss_flow");
 
@@ -128,6 +128,13 @@ public int Native_SetTankFlowPercent(Handle plugin, int numParams)
 	return 1;
 }
 
+public int Native_GetTankFlowPercent(Handle plugin, int numParams)
+{
+	int iRound = InSecondHalfOfRound() ? 1 : 0;
+
+	return RoundToNearest(L4D2Direct_GetVSTankFlowPercent(iRound) * 100.0);
+}
+
 public int Native_SetWitchFlowPercent(Handle plugin, int numParams)
 {
 	int iPercent = GetNativeCell(1);
@@ -136,6 +143,14 @@ public int Native_SetWitchFlowPercent(Handle plugin, int numParams)
 
 	return 1;
 }
+
+public int Native_GetWitchFlowPercent(Handle plugin, int numParams)
+{
+	int iRound = InSecondHalfOfRound() ? 1 : 0;
+
+	return RoundToNearest(L4D2Direct_GetVSWitchFlowPercent(iRound) * 100.0);
+}
+
 
 public void OnMapInit(const char[] sMapName)
 {
@@ -440,4 +455,13 @@ void ReadLine(const char[] sLine)
 			}
 		}
 	}
+}
+
+/**
+ * Checks if the current round is the second.
+ *
+ * @return                  Returns true if is second round, otherwise false.
+ */
+bool InSecondHalfOfRound() {
+	return view_as<bool>(GameRules_GetProp("m_bInSecondHalfOfRound"));
 }

@@ -49,20 +49,21 @@ native bool IsValidWitchFlowPercent(int iPercent);
  * @remarks Passing 0 is allowed and will disable flow tank.
  *
  * @param	iPercent	    Flow percentage to check.
- *
- * @return					True on success, false otherwise.
  */
-native bool SetTankFlowPercent(int iPercent);
+native void SetTankFlowPercent(int iPercent);
+
+native int GetTankFlowPercent();
 
 /**
  * @brief Set the flow percentage of witch on current map.
  * @remarks Passing 0 is allowed and will disable flow witch.
  *
  * @param	iPercent		Flow percentage to check.
- *
- * @return					True on success, false otherwise.
  */
-native bool SetWitchFlowPercent(int iPercent);
+native void SetWitchFlowPercent(int iPercent);
+
+native int GetWitchFlowPercent();
+
 
 public SharedPlugin __pl_boss_flow =
 {
@@ -85,6 +86,8 @@ public void __pl_boss_flow_SetNTVOptional()
 	MarkNativeAsOptional("IsValidTankFlowPercent");
 	MarkNativeAsOptional("IsValidWitchFlowPercent");
 	MarkNativeAsOptional("SetTankFlowPercent");
+	MarkNativeAsOptional("GetTankFlowPercent");
 	MarkNativeAsOptional("SetWitchFlowPercent");
+	MarkNativeAsOptional("GetWitchFlowPercent");
 }
 #endif
