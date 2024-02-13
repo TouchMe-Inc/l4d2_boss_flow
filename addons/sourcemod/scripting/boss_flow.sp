@@ -16,6 +16,8 @@ public Plugin myinfo =
 #define MAX_FLOW 100
 
 
+
+
 char g_sMapName[64];
 
 bool
@@ -30,6 +32,7 @@ Handle
 
 ConVar
 	g_cvPathToDir = null,
+	g_cvAttemptsFindMaxInterval = null,
 	g_cvTankSpawnAllow = null,
 	g_cvWitchSpawnAllow = null
 ;
@@ -76,7 +79,7 @@ public APLRes AskPluginLoad2(Handle myself, bool bLate, char[] sErr, int iErrLen
 public int Native_IsTankSpawnAllow(Handle plugin, int numParams) {
 	return GetConVarBool(g_cvTankSpawnAllow);
 }
-	
+
 public int Native_IsWitchSpawnAllow(Handle plugin, int numParams) {
 	return GetConVarBool(g_cvWitchSpawnAllow);
 }
@@ -151,7 +154,6 @@ public int Native_GetWitchFlowPercent(Handle plugin, int numParams)
 	return RoundToNearest(L4D2Direct_GetVSWitchFlowPercent(iRound) * 100.0);
 }
 
-
 public void OnMapInit(const char[] sMapName)
 {
 	strcopy(g_sMapName, sizeof(g_sMapName), sMapName);
@@ -171,8 +173,28 @@ public void OnMapInit(const char[] sMapName)
 
 public void OnMapStart()
 {
-	SetTankFlowPercent(IsStaticTankMap(g_sMapName) ? 0 : GetRandomTankFlow());
-	SetWitchFlowPercent(IsStaticWitchMap(g_sMapName) ? 0 : GetRandomWitchFlow());
+	int iAttemptsFindMaxInterval = GetConVarInt(g_cvAttemptsFindMaxInterval);
+	int iTankFlow = GetRandomTankFlow();
+	int iWitchFlow = GetRandomWitchFlow();
+	int iMaxInterval = abs(iTankFlow - iWitchFlow);
+
+	for (int iTry = 0; iTry <= iAttemptsFindMaxInterval; iTry ++)
+	{
+		int iTempTankFlow = GetRandomTankFlow();
+		int iTempWitchFlow = GetRandomWitchFlow();
+		int iTempMaxInterval = abs(iTempTankFlow - iTempWitchFlow);
+
+		if (iTempMaxInterval <= iMaxInterval) {
+			continue;
+		}
+
+		iTankFlow = iTempTankFlow;
+		iWitchFlow = iTempWitchFlow;
+		iMaxInterval = iTempMaxInterval;
+	}
+
+	SetTankFlowPercent(IsStaticTankMap(g_sMapName) ? 0 : iTankFlow);
+	SetWitchFlowPercent(IsStaticWitchMap(g_sMapName) ? 0 : iWitchFlow);
 }
 
 public void OnPluginStart()
@@ -181,6 +203,7 @@ public void OnPluginStart()
 	g_hStaticWitchMaps = CreateTrie();
 
 	g_cvPathToDir = CreateConVar("sm_boss_flow_path_to_dir", "addons/sourcemod/configs/boss_flow");
+	g_cvAttemptsFindMaxInterval = CreateConVar("sm_boss_flow_attempts_find_max_interval", "2", "Number of attempts to find the greatest distance", _, true, 0.0);
 	g_cvTankSpawnAllow = CreateConVar("sm_tank_spawn_allow", "1", "Allow tank spawn", _, true, 0.0, true, 1.0);
 	g_cvWitchSpawnAllow = CreateConVar("sm_witch_spawn_allow", "1", "Allow witch spawn", _, true, 0.0, true, 1.0);
 
@@ -377,7 +400,7 @@ void InvalidFlowByFile(const char[] sFileName)
 
 		for (int iChar = 0; iChar < iLineLength; iChar++)
 		{
-			if (sLine[iChar] == '/' && iChar != iLineLength - 1 && sLine[iChar+1] == '/')
+			if (sLine[iChar] == '/' && iChar != iLineLength - 1 && sLine[iChar + 1] == '/')
 			{
 				sLine[iChar] = '\0';
 				break;
@@ -464,4 +487,8 @@ void ReadLine(const char[] sLine)
  */
 bool InSecondHalfOfRound() {
 	return view_as<bool>(GameRules_GetProp("m_bInSecondHalfOfRound"));
+}
+
+int abs(int value) {
+	return (value < 0) ? -value : value;
 }
