@@ -1,3 +1,6 @@
+#pragma semicolon               1
+#pragma newdecls                required
+
 #include <sourcemod>
 #include <left4dhooks>
 
@@ -14,8 +17,6 @@ public Plugin myinfo =
 
 #define MIN_FLOW 1
 #define MAX_FLOW 100
-
-
 
 
 char g_sMapName[64];
@@ -353,28 +354,42 @@ bool IsStaticWitchMap(const char[] sMapName)
 
 void SetTankFlowPercent(int iFlow)
 {
-	float fPersent = (float(iFlow) / 100.0);
+	if (iFlow == 0) {
+		L4D2Direct_SetVSTankFlowPercent(0, 0.0);
+		L4D2Direct_SetVSTankFlowPercent(1, 0.0);
+		L4D2Direct_SetVSTankToSpawnThisRound(0, false);
+		L4D2Direct_SetVSTankToSpawnThisRound(1, false);
+	}
 
-	L4D2Direct_SetVSTankFlowPercent(0, fPersent);
-	L4D2Direct_SetVSTankFlowPercent(1, fPersent);
-
-	bool bCanSpawn = (iFlow > 0);
-
-	L4D2Direct_SetVSTankToSpawnThisRound(0, bCanSpawn);
-	L4D2Direct_SetVSTankToSpawnThisRound(1, bCanSpawn);
+	else
+	{
+		float fPersent = (float(iFlow) / 100.0);
+		L4D2Direct_SetVSTankFlowPercent(0, fPersent);
+		L4D2Direct_SetVSTankFlowPercent(1, fPersent);
+		L4D2Direct_SetVSTankToSpawnThisRound(0, true);
+		L4D2Direct_SetVSTankToSpawnThisRound(1, true);
+	}
 }
 
 void SetWitchFlowPercent(int iFlow)
 {
-	float fPersent = (float(iFlow) / 100.0);
+	if (iFlow == 0)
+	{
+		L4D2Direct_SetVSWitchFlowPercent(0, 0.0);
+		L4D2Direct_SetVSWitchFlowPercent(1, 0.0);
+		L4D2Direct_SetVSWitchToSpawnThisRound(0, false);
+		L4D2Direct_SetVSWitchToSpawnThisRound(1, false);
+	}
 
-	L4D2Direct_SetVSWitchFlowPercent(0, fPersent);
-	L4D2Direct_SetVSWitchFlowPercent(1, fPersent);
+	else
+	{
+		float fPersent = (float(iFlow) / 100.0);
 
-	bool bCanSpawn = (iFlow > 0);
-
-	L4D2Direct_SetVSWitchToSpawnThisRound(0, bCanSpawn);
-	L4D2Direct_SetVSWitchToSpawnThisRound(1, bCanSpawn);
+		L4D2Direct_SetVSWitchFlowPercent(0, fPersent);
+		L4D2Direct_SetVSWitchFlowPercent(1, fPersent);
+		L4D2Direct_SetVSWitchToSpawnThisRound(0, true);
+		L4D2Direct_SetVSWitchToSpawnThisRound(1, true);
+	}
 }
 
 void InvalidFlowByFile(const char[] sFileName)
