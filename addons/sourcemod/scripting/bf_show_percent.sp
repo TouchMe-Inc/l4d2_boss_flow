@@ -77,6 +77,10 @@ Action Cmd_Boss(int iClient, int iArgs)
 		int iTankPercent = GetTankFlowPercent();
 		int iTankTriggerPercent = iTankPercent - RoundToNearest(fBossBuffer * 100.0);
 
+		if (iTankTriggerPercent < 0) {
+			iTankTriggerPercent = 1;
+		}
+
 		if (IsStaticTankMap())
 		{
 			FormatEx(sTankPercent, sizeof(sTankPercent), "%T", "STATIC", iClient);
@@ -104,6 +108,10 @@ Action Cmd_Boss(int iClient, int iArgs)
 
 		int iWitchPercent = GetWitchFlowPercent();
 		int iWitchTriggerPercent = iWitchPercent - RoundToNearest(fBossBuffer * 100.0);
+
+		if (iWitchTriggerPercent < 0) {
+			iWitchTriggerPercent = 1;
+		}
 
 		if (IsStaticWitchMap())
 		{
