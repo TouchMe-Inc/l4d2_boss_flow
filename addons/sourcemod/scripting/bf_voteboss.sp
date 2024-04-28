@@ -20,11 +20,6 @@ public Plugin myinfo =
 
 #define TRANSLATIONS            "bf_voteboss.phrases"
 
-/*
- * Libs.
- */
-#define LIB_READY               "readyup"
-
 #define MIN_FLOW 1
 #define MAX_FLOW 100
 
@@ -38,50 +33,7 @@ int
 	g_iWitchPercent = 0
 ;
 
-bool
-	g_bRoundIsLive = false,
-	g_bReadyUpAvailable = false
-;
-
-
-/**
-  * Global event. Called when all plugins loaded.
-  */
-public void OnAllPluginsLoaded() {
-	g_bReadyUpAvailable = LibraryExists(LIB_READY);
-}
-
-/**
-  * Global event. Called when a library is removed.
-  *
-  * @param sName     Library name
-  */
-public void OnLibraryRemoved(const char[] sName)
-{
-	if (StrEqual(sName, LIB_READY)) {
-		g_bReadyUpAvailable = false;
-	}
-}
-
-/**
-  * Global event. Called when a library is added.
-  *
-  * @param sName     Library name
-  */
-public void OnLibraryAdded(const char[] sName)
-{
-	if (StrEqual(sName, LIB_READY)) {
-		g_bReadyUpAvailable = true;
-	}
-}
-
-/**
-  * @requared readyup
-  * Global event. Called when all players are ready.
-  */
-public void OnRoundIsLive() {
-	g_bRoundIsLive = true;
-}
+bool g_bRoundIsLive = false;
 
 /**
  * Called before OnPluginStart.
@@ -94,9 +46,7 @@ public void OnRoundIsLive() {
  */
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-	EngineVersion engine = GetEngineVersion();
-
-	if (engine != Engine_Left4Dead2)
+	if (GetEngineVersion() != Engine_Left4Dead2)
 	{
 		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
 		return APLRes_SilentFailure;
@@ -128,15 +78,8 @@ void Event_RoundStart(Event event, const char[] sName, bool bDontBroadcast) {
 /**
  * Round start event.
  */
-Action Event_LeftStartArea(Event event, const char[] sName, bool bDontBroadcast)
-{
-	if (g_bReadyUpAvailable) {
-		return Plugin_Continue;
-	}
-
+void Event_LeftStartArea(Event event, const char[] sName, bool bDontBroadcast) {
 	g_bRoundIsLive = true;
-
-	return Plugin_Continue;
 }
 
 /**
