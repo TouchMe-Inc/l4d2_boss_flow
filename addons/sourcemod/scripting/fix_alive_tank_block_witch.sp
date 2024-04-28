@@ -5,8 +5,7 @@
 #include <sourcescramble>
 
 
-public Plugin myinfo = 
-{
+public Plugin myinfo =  {
 	name = "[L4D & 2] Witch Spawn Fix",
 	author = "Forgetest",
 	description = "Fix witch unable to spawn when tank is in play.",

@@ -27,8 +27,8 @@ bool
 ;
 
 Handle
-	g_hStaticTankMaps,
-	g_hStaticWitchMaps
+	g_hStaticTankMaps = null,
+	g_hStaticWitchMaps = null
 ;
 
 ConVar
