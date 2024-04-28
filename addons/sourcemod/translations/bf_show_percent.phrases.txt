@@ -20,32 +20,36 @@
 		"en"			"<{green}Boss Percent{default}> "
 	}
 
-	"STATIC"
+	"TANK_STATIC"
 	{
-		"en"			"static"
+		"en"			"{olive}Tank{default} static"
 	}
 
-	"DISABLE"
+	"TANK_DISABLED"
 	{
-		"en"			"disable"
-	}
-
-	"PERCENT"
-	{
-		"#format"		"{1:d}"
-		"en"			"{1}%%"
+		"en"			"{olive}Tank{default} disabled"
 	}
 
 	"TANK_FLOW"
 	{
-		"#format"		"{1:s},{2:s}"
-		"en"			"{olive}Tank{default} {1} (spawn {2})"
+		"#format"		"{1:d},{2:d}"
+		"en"			"{olive}Tank{default} {1}%% (spawn {2}%%)"
+	}
+
+	"WITCH_STATIC"
+	{
+		"en"			"{olive}Witch{default} static"
+	}
+
+	"WITCH_DISABLED"
+	{
+		"en"			"{olive}Witch{default} disabled"
 	}
 
 	"WITCH_FLOW"
 	{
-		"#format"		"{1:s},{2:s}"
-		"en"			"{olive}Witch{default} {1} (spawn {2})"
+		"#format"		"{1:d},{2:d}"
+		"en"			"{olive}Witch{default} {1}%% (spawn {2}%%)"
 	}
 
 	"SURVIVOR_FLOW"

@@ -7,12 +7,11 @@
 #include <colors>
 
 
-public Plugin myinfo =
-{
+public Plugin myinfo = {
 	name = "BossFlowShowPercent",
 	author = "TouchMe",
 	description = "Plugin displays boss locations",
-	version = "build0001",
+	version = "build0003",
 	url = "https://github.com/TouchMe-Inc/l4d2_boss_flow"
 }
 
@@ -56,85 +55,61 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_current", Cmd_Boss);
 }
 
-/**
- * When a player wants to find out whos becoming tank,
- * output to them.
- */
 Action Cmd_Boss(int iClient, int iArgs)
 {
 	float fBossBuffer = GetConVarFloat(g_cvVsBossBuffer) / L4D2Direct_GetMapMaxFlowDistance();
 
-	char sBracketStart[16]; FormatEx(sBracketStart, sizeof(sBracketStart), "%T", "BRACKET_START", iClient);
-	char sBracketMiddle[16]; FormatEx(sBracketMiddle, sizeof(sBracketMiddle), "%T", "BRACKET_MIDDLE", iClient);
-	char sBracketEnd[16]; FormatEx(sBracketEnd, sizeof(sBracketEnd), "%T", "BRACKET_END", iClient);
-
-	CPrintToChat(iClient, "%s%T", sBracketStart, "TAG", iClient);
+	CPrintToChat(iClient, "%T%T", "BRACKET_START", iClient, "TAG", iClient);
 
 	if (IsTankSpawnAllow())
 	{
-		char sTankPercent[32], sTankTriggerPercent[32];
-
 		int iTankPercent = GetTankFlowPercent();
-		int iTankTriggerPercent = iTankPercent - RoundToNearest(fBossBuffer * 100.0);
 
-		if (iTankTriggerPercent < 0) {
-			iTankTriggerPercent = 1;
+		if (IsStaticTankMap()) {
+			CPrintToChat(iClient, "%T%T", "BRACKET_MIDDLE", iClient, "TANK_STATIC", iClient);
 		}
 
-		if (IsStaticTankMap())
-		{
-			FormatEx(sTankPercent, sizeof(sTankPercent), "%T", "STATIC", iClient);
-			FormatEx(sTankTriggerPercent, sizeof(sTankTriggerPercent), "%T", "STATIC", iClient);
+		else if (iTankPercent == 0) {
+			CPrintToChat(iClient, "%T%T", "BRACKET_MIDDLE", iClient, "TANK_DISABLED", iClient);
 		}
-		
-		else if (iTankPercent == 0)
-		{
-			FormatEx(sTankPercent, sizeof(sTankPercent), "%T", "DISABLE", iClient);
-			FormatEx(sTankTriggerPercent, sizeof(sTankTriggerPercent), "%T", "DISABLE", iClient);
-		}
-		
+
 		else
 		{
-			FormatEx(sTankPercent, sizeof(sTankPercent), "%T", "PERCENT", iClient, iTankPercent);
-			FormatEx(sTankTriggerPercent, sizeof(sTankTriggerPercent), "%T", "PERCENT", iClient, iTankTriggerPercent);
-		}
+			int iTankTriggerPercent = iTankPercent - RoundToNearest(fBossBuffer * 100.0);
 
-		CPrintToChat(iClient, "%s%T", sBracketMiddle, "TANK_FLOW", iClient, sTankTriggerPercent, sTankPercent);
+			if (iTankTriggerPercent < 0) {
+				iTankTriggerPercent = 1;
+			}
+
+			CPrintToChat(iClient, "%T%T", "BRACKET_MIDDLE", iClient, "TANK_FLOW", iClient, iTankTriggerPercent, iTankPercent);
+		}
 	}
 
 	if (IsWitchSpawnAllow())
 	{
-		char sWitchPercent[32], sWitchTriggerPercent[32];
-
 		int iWitchPercent = GetWitchFlowPercent();
-		int iWitchTriggerPercent = iWitchPercent - RoundToNearest(fBossBuffer * 100.0);
 
-		if (iWitchTriggerPercent < 0) {
-			iWitchTriggerPercent = 1;
+		if (IsStaticWitchMap()) {
+			CPrintToChat(iClient, "%T%T", "BRACKET_MIDDLE", iClient, "WITCH_STATIC", iClient);
 		}
 
-		if (IsStaticWitchMap())
-		{
-			FormatEx(sWitchPercent, sizeof(sWitchPercent), "%T", "STATIC", iClient);
-			FormatEx(sWitchTriggerPercent, sizeof(sWitchTriggerPercent), "%T", "STATIC", iClient);
+		else if (iWitchPercent == 0) {
+			CPrintToChat(iClient, "%T%T", "BRACKET_MIDDLE", iClient, "WITCH_DISABLED", iClient);
 		}
-		
-		else if (iWitchPercent == 0)
-		{
-			FormatEx(sWitchPercent, sizeof(sWitchPercent), "%T", "DISABLE", iClient);
-			FormatEx(sWitchTriggerPercent, sizeof(sWitchTriggerPercent), "%T", "DISABLE", iClient);
-		}
-		
+
 		else
 		{
-			FormatEx(sWitchPercent, sizeof(sWitchPercent), "%T", "PERCENT", iClient, iWitchPercent);
-			FormatEx(sWitchTriggerPercent, sizeof(sWitchTriggerPercent), "%T", "PERCENT", iClient, iWitchTriggerPercent);
+			int iWitchTriggerPercent = iWitchPercent - RoundToNearest(fBossBuffer * 100.0);
+
+			if (iWitchTriggerPercent < 0) {
+				iWitchTriggerPercent = 1;
+			}
+
+			CPrintToChat(iClient, "%T%T", "BRACKET_MIDDLE", iClient, "WITCH_FLOW", iClient, iWitchTriggerPercent, iWitchPercent);
 		}
-	
-		CPrintToChat(iClient, "%s%T", sBracketMiddle, "WITCH_FLOW", iClient, sWitchTriggerPercent, sWitchPercent);
 	}
-	
-	CPrintToChat(iClient, "%s%T", sBracketEnd, "SURVIVOR_FLOW", iClient, GetFurthestSurvivorFlowPercent());
+
+	CPrintToChat(iClient, "%T%T", "BRACKET_END", iClient, "SURVIVOR_FLOW", iClient, GetFurthestSurvivorFlowPercent());
 
 	return Plugin_Handled;
 }

@@ -20,32 +20,36 @@
 		"ru"			"<{green}Boss Percent{default}> "
 	}
 
-	"STATIC"
+	"TANK_STATIC"
 	{
-		"ru"			"статично"
+		"ru"			"{olive}Танк{default} статичный"
 	}
 
-	"DISABLE"
+	"TANK_DISABLED"
 	{
-		"ru"			"отключен"
-	}
-
-	"PERCENT"
-	{
-		"#format"		"{1:d}"
-		"ru"			"{1}%%"
+		"ru"			"{olive}Танк{default} отключен"
 	}
 
 	"TANK_FLOW"
 	{
-		"#format"		"{1:s},{2:s}"
-		"ru"			"{olive}Танк{default} {1} (спавн {2})"
+		"#format"		"{1:d},{2:d}"
+		"ru"			"{olive}Танк{default} {1}%% (спавн {2}%%)"
+	}
+
+	"WITCH_STATIC"
+	{
+		"ru"			"{olive}Ведьма{default} статична"
+	}
+
+	"WITCH_DISABLED"
+	{
+		"ru"			"{olive}Ведьма{default} отключена"
 	}
 
 	"WITCH_FLOW"
 	{
-		"#format"		"{1:s},{2:s}"
-		"ru"			"{olive}Ведьма{default} {1} (спавн {2})"
+		"#format"		"{1:d},{2:d}"
+		"ru"			"{olive}Ведьма{default} {1}%% (спавн {2}%%)"
 	}
 
 	"SURVIVOR_FLOW"
