@@ -6,8 +6,7 @@
 enum Boss
 {
     Boss_Tank,
-    Boss_Witch,
-    BOSS_SIZE
+    Boss_Witch
 }
 
 native bool IsBossSpawnAllowed(Boss boss);
