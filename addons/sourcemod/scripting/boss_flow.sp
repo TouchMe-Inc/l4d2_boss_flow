@@ -258,14 +258,13 @@ bool IsValidBossFlow(int iFlow) {
 
 int GetRandomTankFlow()
 {
-    int iTankFlow = 0;
-
     Handle hValidTankFlow = CreateArray();
 
+    int iTankFlow = 0;
     int iMinFlow = CVAR_MIN_FLOW;
     int iMaxFlow = CVAR_MAX_FLOW;
 
-    for (int iFlow = iMinFlow + 1; iFlow <= iMaxFlow - 1; iFlow ++)
+    for (int iFlow = iMinFlow; iFlow <= iMaxFlow; iFlow ++)
     {
         if (!IsAvaibleBossFlow(Boss_Tank, iFlow)) {
             continue;
@@ -413,8 +412,8 @@ void ReadLine(const char[] sLine)
 {
     int iPos = 0;
 
-    char sTarget[16], sValueStart[16], sValueEnd[16];
-    iPos += BreakString(sLine[iPos], sTarget, sizeof(sTarget));
+    char szTarget[16], sValueStart[16], sValueEnd[16];
+    iPos += BreakString(sLine[iPos], szTarget, sizeof(szTarget));
     iPos += BreakString(sLine[iPos], sValueStart, sizeof(sValueStart));
     iPos += BreakString(sLine[iPos], sValueEnd, sizeof(sValueEnd));
 
@@ -427,9 +426,9 @@ void ReadLine(const char[] sLine)
 
     Boss boss;
 
-    if (StrEqual(sTarget, "tank", false)) {
+    if (StrEqual(szTarget, "tank", false)) {
         boss = Boss_Tank;
-    } else if (StrEqual(sTarget, "witch", false)) {
+    } else if (StrEqual(szTarget, "witch", false)) {
         boss = Boss_Witch;
     } else {
         return;
