@@ -171,7 +171,7 @@ public void OnMapInit(const char[] szMapName)
     GetConVarString(g_cvPathToDir, szPathToDir, sizeof(szPathToDir));
     FormatEx(sPathToFile, sizeof(sPathToFile), "%s/%s.cfg", szPathToDir, szMapName);
 
-    InvalidFlowByFile(sPathToFile);
+    BanFlowByFile(sPathToFile);
 }
 
 public void OnMapStart()
@@ -367,7 +367,7 @@ void SetWitchFlow(int iFlow)
     }
 }
 
-void InvalidFlowByFile(const char[] sFileName)
+void BanFlowByFile(const char[] sFileName)
 {
     File hFile = OpenFile(sFileName, "rt");
 
@@ -413,40 +413,31 @@ void ReadLine(const char[] sLine)
 {
     int iPos = 0;
 
-    char sTarget[16];
+    char sTarget[16], sValueStart[16], sValueEnd[16];
     iPos += BreakString(sLine[iPos], sTarget, sizeof(sTarget));
+    iPos += BreakString(sLine[iPos], sValueStart, sizeof(sValueStart));
+    iPos += BreakString(sLine[iPos], sValueEnd, sizeof(sValueEnd));
 
-    char sType[16];
-    iPos += BreakString(sLine[iPos], sType, sizeof(sType));
+    int iFlowStart = StringToInt(sValueStart);
+    int iFlowEnd = StringToInt(sValueEnd);
 
-    if (StrEqual(sType, "interval"))
+    if (!IsValidFlow(iFlowStart) || !IsValidFlow(iFlowEnd)) {
+        return;
+    }
+
+    Boss boss;
+
+    if (StrEqual(sTarget, "tank", false)) {
+        boss = Boss_Tank;
+    } else if (StrEqual(sTarget, "witch", false)) {
+        boss = Boss_Witch;
+    } else {
+        return;
+    }
+
+    for (int iFlow = iFlowStart; iFlow <= iFlowEnd; iFlow ++)
     {
-        char sValueStart[16], sValueEnd[16];
-        iPos += BreakString(sLine[iPos], sValueStart, sizeof(sValueStart));
-        iPos += BreakString(sLine[iPos], sValueEnd, sizeof(sValueEnd));
-
-        int iFlowStart = StringToInt(sValueStart);
-        int iFlowEnd = StringToInt(sValueEnd);
-
-        if (!IsValidFlow(iFlowStart) || !IsValidFlow(iFlowEnd)) {
-            return;
-        }
-
-        if (StrEqual(sTarget, "tank"))
-        {
-            for (int iFlow = iFlowStart; iFlow <= iFlowEnd; iFlow ++)
-            {
-                SetAvaibleBossFlow(Boss_Tank, iFlow, false);
-            }
-        }
-
-        else if (StrEqual(sTarget, "witch"))
-        {
-            for (int iFlow = iFlowStart; iFlow <= iFlowEnd; iFlow ++)
-            {
-                SetAvaibleBossFlow(Boss_Witch, iFlow, false);
-            }
-        }
+        SetAvaibleBossFlow(boss, iFlow, false);
     }
 }
 
