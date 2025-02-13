@@ -5,42 +5,45 @@
 #include <left4dhooks>
 
 
-public Plugin myinfo =
-{
-	name = "BossFlow",
-	author = "TouchMe",
-	description = "Manipulating boss spawns",
-	version = "build0000",
-	url = "https://github.com/TouchMe-Inc/l4d2_boss_flow"
+public Plugin myinfo = {
+    name        = "BossFlow",
+    author      = "TouchMe",
+    description = "Manipulating boss spawns",
+    version     = "build_0001",
+    url         = "https://github.com/TouchMe-Inc/l4d2_boss_flow"
 }
 
 
+#define MAX_MAP_NAME_LENGTH 32
+
 #define MIN_FLOW 1
 #define MAX_FLOW 100
+#define CVAR_MIN_FLOW (RoundToCeil(GetConVarFloat(g_cvVsBossFlowMin) * 100.0))
+#define CVAR_MAX_FLOW (RoundToFloor(GetConVarFloat(g_cvVsBossFlowMax) * 100.0))
 
+enum Boss
+{
+    Boss_Tank,
+    Boss_Witch,
+    BOSS_SIZE
+}
 
-char g_sMapName[64];
+char g_szMapName[MAX_MAP_NAME_LENGTH];
 
-bool
-	g_bValidTankFlow[MAX_FLOW] = {true, ...},
-	g_bValidWitchFlow[MAX_FLOW] = {true, ...}
-;
+bool g_bAvaibleBossFlow[BOSS_SIZE][MAX_FLOW];
 
 Handle
-	g_hStaticTankMaps = null,
-	g_hStaticWitchMaps = null
+    g_hStaticTankMaps = null,
+    g_hStaticWitchMaps = null
 ;
 
 ConVar
-	g_cvPathToDir = null,
-	g_cvAttemptsFindMaxInterval = null,
-	g_cvTankSpawnAllow = null,
-	g_cvWitchSpawnAllow = null
-;
-
-ConVar
-	g_cvVsBossFlowMin = null,
-	g_cvVsBossFlowMax = null
+    g_cvPathToDir = null,
+    g_cvAttemptsFindMaxInterval = null,
+    g_cvTankSpawnAllow = null,
+    g_cvWitchSpawnAllow = null,
+    g_cvVsBossFlowMin = null,
+    g_cvVsBossFlowMax = null
 ;
 
 
@@ -55,444 +58,396 @@ ConVar
  */
 public APLRes AskPluginLoad2(Handle myself, bool bLate, char[] sErr, int iErrLen)
 {
-	if (GetEngineVersion() != Engine_Left4Dead2)
-	{
-		strcopy(sErr, iErrLen, "Plugin only supports Left 4 Dead 2");
-		return APLRes_SilentFailure;
-	}
+    if (GetEngineVersion() != Engine_Left4Dead2)
+    {
+        strcopy(sErr, iErrLen, "Plugin only supports Left 4 Dead 2");
+        return APLRes_SilentFailure;
+    }
 
-	CreateNative("IsTankSpawnAllow", Native_IsTankSpawnAllow);
-	CreateNative("IsWitchSpawnAllow", Native_IsWitchSpawnAllow);
-	CreateNative("IsStaticTankMap", Native_IsStaticTankMap);
-	CreateNative("IsStaticWitchMap", Native_IsStaticWitchMap);
-	CreateNative("IsValidTankFlowPercent", Native_IsValidTankFlowPercent);
-	CreateNative("IsValidWitchFlowPercent", Native_IsValidWitchFlowPercent);
-	CreateNative("SetTankFlowPercent", Native_SetTankFlowPercent);
-	CreateNative("GetTankFlowPercent", Native_GetTankFlowPercent);
-	CreateNative("SetWitchFlowPercent", Native_SetWitchFlowPercent);
-	CreateNative("GetWitchFlowPercent", Native_GetWitchFlowPercent);
+    CreateNative("IsBossSpawnAllowed", Native_IsBossSpawnAllowed);
+    CreateNative("IsMapWithStaticBossSpawn", Native_IsMapWithStaticBossSpawn);
+    CreateNative("IsAvaibleBossFlow", Native_IsAvaibleBossFlow);
+    CreateNative("SetBossFlow", Native_SetBossFlow);
+    CreateNative("GetBossFlow", Native_GetBossFlow);
 
-	RegPluginLibrary("boss_flow");
+    RegPluginLibrary("boss_flow");
 
-	return APLRes_Success;
+    return APLRes_Success;
 }
 
-public int Native_IsTankSpawnAllow(Handle plugin, int numParams) {
-	return GetConVarBool(g_cvTankSpawnAllow);
-}
-
-public int Native_IsWitchSpawnAllow(Handle plugin, int numParams) {
-	return GetConVarBool(g_cvWitchSpawnAllow);
-}
-
-public int Native_IsStaticTankMap(Handle plugin, int numParams) {
-	return IsStaticTankMap(g_sMapName);
-}
-
-public int Native_IsStaticWitchMap(Handle plugin, int numParams) {
-	return IsStaticWitchMap(g_sMapName);
-}
-
-public int Native_IsValidTankFlowPercent(Handle plugin, int numParams)
+public int Native_IsBossSpawnAllowed(Handle plugin, int numParams)
 {
-	int iFlow = GetNativeCell(1);
+    Boss boss = view_as<Boss>(GetNativeCell(1));
 
-	if (!IsValidFlow(iFlow)) {
-		ThrowNativeError(SP_ERROR_NATIVE, "The value must be between 1 and 100");
-	}
+    switch (boss)
+    {
+        case Boss_Tank: return GetConVarBool(g_cvTankSpawnAllow);
+        case Boss_Witch: return GetConVarBool(g_cvWitchSpawnAllow);
+    }
 
-	if (!IsValidConVarFlow(iFlow)) {
-		return 0;
-	}
-
-	return IsValidTankFlow(iFlow);
+    return 0;
 }
 
-public int Native_IsValidWitchFlowPercent(Handle plugin, int numParams)
+public int Native_IsMapWithStaticBossSpawn(Handle plugin, int numParams)
 {
-	int iFlow = GetNativeCell(1);
+    Boss boss = view_as<Boss>(GetNativeCell(1));
 
-	if (!IsValidFlow(iFlow)) {
-		ThrowNativeError(SP_ERROR_NATIVE, "The value must be between 1 and 100");
-	}
-
-	if (!IsValidConVarFlow(iFlow)) {
-		return 0;
-	}
-
-	return IsValidWitchFlow(iFlow);
+    return IsMapWithStaticBossSpawn(boss, g_szMapName);
 }
 
-public int Native_SetTankFlowPercent(Handle plugin, int numParams)
+public int Native_IsAvaibleBossFlow(Handle plugin, int numParams)
 {
-	int iPercent = GetNativeCell(1);
+    Boss boss = view_as<Boss>(GetNativeCell(1));
+    int iFlow = GetNativeCell(2);
 
-	SetTankFlowPercent(iPercent);
+    if (!IsValidFlow(iFlow)) {
+        return -2;
+    }
 
-	return 1;
+    if (!IsValidBossFlow(iFlow)) {
+        return -1;
+    }
+
+    return IsAvaibleBossFlow(boss, iFlow);
 }
 
-public int Native_GetTankFlowPercent(Handle plugin, int numParams)
+public int Native_SetBossFlow(Handle plugin, int numParams)
 {
-	int iRound = InSecondHalfOfRound() ? 1 : 0;
+    Boss boss = view_as<Boss>(GetNativeCell(1));
+    int iFlow = GetNativeCell(2);
 
-	return RoundToNearest(L4D2Direct_GetVSTankFlowPercent(iRound) * 100.0);
+    switch (boss)
+    {
+        case Boss_Tank: SetTankFlow(iFlow);
+        case Boss_Witch: SetWitchFlow(iFlow);
+    }
+
+    return 1;
 }
 
-public int Native_SetWitchFlowPercent(Handle plugin, int numParams)
+public int Native_GetBossFlow(Handle plugin, int numParams)
 {
-	int iPercent = GetNativeCell(1);
+    Boss boss = view_as<Boss>(GetNativeCell(1));
+    int iRound = InSecondHalfOfRound() ? 1 : 0;
 
-	SetWitchFlowPercent(iPercent);
+    switch (boss)
+    {
+        case Boss_Tank: return RoundToNearest(L4D2Direct_GetVSTankFlowPercent(iRound) * 100.0);
+        case Boss_Witch: return RoundToNearest(L4D2Direct_GetVSWitchFlowPercent(iRound) * 100.0);
+    }
 
-	return 1;
-}
-
-public int Native_GetWitchFlowPercent(Handle plugin, int numParams)
-{
-	int iRound = InSecondHalfOfRound() ? 1 : 0;
-
-	return RoundToNearest(L4D2Direct_GetVSWitchFlowPercent(iRound) * 100.0);
-}
-
-public void OnMapInit(const char[] sMapName)
-{
-	strcopy(g_sMapName, sizeof(g_sMapName), sMapName);
-
-	for (int iFlow = MIN_FLOW; iFlow <= MAX_FLOW; iFlow ++)
-	{
-		SetValidTankFlow(iFlow, true);
-		SetValidWitchFlow(iFlow, true);
-	}
-
-	char sPathToDir[PLATFORM_MAX_PATH], sPathToFile[PLATFORM_MAX_PATH];
-	GetConVarString(g_cvPathToDir, sPathToDir, sizeof(sPathToDir));
-	FormatEx(sPathToFile, sizeof(sPathToFile), "%s/%s.cfg", sPathToDir, sMapName);
-
-	InvalidFlowByFile(sPathToFile);
-}
-
-public void OnMapStart()
-{
-	int iAttemptsFindMaxInterval = GetConVarInt(g_cvAttemptsFindMaxInterval);
-	int iTankFlow = GetRandomTankFlow();
-	int iWitchFlow = GetRandomWitchFlow();
-	int iMaxInterval = abs(iTankFlow - iWitchFlow);
-
-	for (int iTry = 0; iTry <= iAttemptsFindMaxInterval; iTry ++)
-	{
-		int iTempTankFlow = GetRandomTankFlow();
-		int iTempWitchFlow = GetRandomWitchFlow();
-		int iTempMaxInterval = abs(iTempTankFlow - iTempWitchFlow);
-
-		if (iTempMaxInterval <= iMaxInterval) {
-			continue;
-		}
-
-		iTankFlow = iTempTankFlow;
-		iWitchFlow = iTempWitchFlow;
-		iMaxInterval = iTempMaxInterval;
-	}
-
-	SetTankFlowPercent(IsStaticTankMap(g_sMapName) ? 0 : iTankFlow);
-	SetWitchFlowPercent(IsStaticWitchMap(g_sMapName) ? 0 : iWitchFlow);
+    return -1;
 }
 
 public void OnPluginStart()
 {
-	g_hStaticTankMaps = CreateTrie();
-	g_hStaticWitchMaps = CreateTrie();
+    g_hStaticTankMaps = CreateTrie();
+    g_hStaticWitchMaps = CreateTrie();
 
-	g_cvPathToDir = CreateConVar("sm_boss_flow_path_to_dir", "addons/sourcemod/configs/boss_flow");
-	g_cvAttemptsFindMaxInterval = CreateConVar("sm_boss_flow_attempts_find_max_interval", "2", "Number of attempts to find the greatest distance", _, true, 0.0);
-	g_cvTankSpawnAllow = CreateConVar("sm_tank_spawn_allow", "1", "Allow tank spawn", _, true, 0.0, true, 1.0);
-	g_cvWitchSpawnAllow = CreateConVar("sm_witch_spawn_allow", "1", "Allow witch spawn", _, true, 0.0, true, 1.0);
+    g_cvVsBossFlowMin = FindConVar("versus_boss_flow_min");
+    g_cvVsBossFlowMax = FindConVar("versus_boss_flow_max");
 
-	g_cvVsBossFlowMin = FindConVar("versus_boss_flow_min");
-	g_cvVsBossFlowMax = FindConVar("versus_boss_flow_max");
+    g_cvPathToDir = CreateConVar("sm_boss_flow_path_to_dir", "addons/sourcemod/configs/boss_flow");
+    g_cvAttemptsFindMaxInterval = CreateConVar("sm_boss_flow_attempts_find_max_interval", "2", "Number of attempts to find the greatest distance", _, true, 1.0);
+    g_cvTankSpawnAllow = CreateConVar("sm_tank_spawn_allow", "1", "Allow tank spawn", _, true, 0.0, true, 1.0);
+    g_cvWitchSpawnAllow = CreateConVar("sm_witch_spawn_allow", "1", "Allow witch spawn", _, true, 0.0, true, 1.0);
 
-	RegServerCmd("static_tank_map", Cmd_AddStaticTankMap, "static_tank_map <map>");
-	RegServerCmd("static_witch_map", Cmd_AddStaticWitchMap, "static_witch_map <map>");
-	RegServerCmd("reset_static_maps", Cmd_ResetStaticMaps);
+    RegServerCmd("static_tank_map", Cmd_AddStaticTankMap, "static_tank_map <map>");
+    RegServerCmd("static_witch_map", Cmd_AddStaticWitchMap, "static_witch_map <map>");
+    RegServerCmd("reset_static_maps", Cmd_ResetStaticMaps);
+}
+
+public void OnMapInit(const char[] szMapName)
+{
+    strcopy(g_szMapName, sizeof(g_szMapName), szMapName);
+
+    for (int iFlow = MIN_FLOW; iFlow <= MAX_FLOW; iFlow ++)
+    {
+        SetAvaibleBossFlow(Boss_Tank, iFlow, true);
+        SetAvaibleBossFlow(Boss_Witch, iFlow, true);
+    }
+
+    char szPathToDir[PLATFORM_MAX_PATH], sPathToFile[PLATFORM_MAX_PATH];
+    GetConVarString(g_cvPathToDir, szPathToDir, sizeof(szPathToDir));
+    FormatEx(sPathToFile, sizeof(sPathToFile), "%s/%s.cfg", szPathToDir, szMapName);
+
+    InvalidFlowByFile(sPathToFile);
+}
+
+public void OnMapStart()
+{
+    int iAttemptsFindMaxInterval = GetConVarInt(g_cvAttemptsFindMaxInterval);
+    int iTankFlow = GetRandomTankFlow();
+    int iWitchFlow = GetRandomWitchFlow();
+    int iMaxInterval = abs(iTankFlow - iWitchFlow);
+
+    for (int iTry = 1; iTry <= iAttemptsFindMaxInterval; iTry ++)
+    {
+        int iTempTankFlow = GetRandomTankFlow();
+        int iTempWitchFlow = GetRandomWitchFlow();
+        int iTempMaxInterval = abs(iTempTankFlow - iTempWitchFlow);
+
+        if (iTempMaxInterval <= iMaxInterval) {
+            continue;
+        }
+
+        iTankFlow = iTempTankFlow;
+        iWitchFlow = iTempWitchFlow;
+        iMaxInterval = iTempMaxInterval;
+    }
+
+    SetTankFlow(IsMapWithStaticBossSpawn(Boss_Tank, g_szMapName) ? 0 : iTankFlow);
+    SetWitchFlow(IsMapWithStaticBossSpawn(Boss_Witch, g_szMapName) ? 0 : iWitchFlow);
 }
 
 public Action L4D_OnSpawnTank(const float vPos[3], const float vAng[3]) {
-	return GetConVarBool(g_cvTankSpawnAllow) ? Plugin_Continue : Plugin_Handled;
+    return GetConVarBool(g_cvTankSpawnAllow) ? Plugin_Continue : Plugin_Handled;
 }
 
 public Action L4D_OnSpawnWitch(const float vPos[3], const float vAng[3]) {
-	return GetConVarBool(g_cvWitchSpawnAllow) ? Plugin_Continue : Plugin_Handled;
+    return GetConVarBool(g_cvWitchSpawnAllow) ? Plugin_Continue : Plugin_Handled;
 }
 
 public Action L4D2_OnSpawnWitchBride(const float vPos[3], const float vAng[3]) {
-	return GetConVarBool(g_cvWitchSpawnAllow) ? Plugin_Continue : Plugin_Handled;
+    return GetConVarBool(g_cvWitchSpawnAllow) ? Plugin_Continue : Plugin_Handled;
 }
 
 Action Cmd_AddStaticTankMap(int args)
 {
-	char sMapName[64]; GetCmdArg(1, sMapName, sizeof(sMapName));
+    char szMapName[MAX_MAP_NAME_LENGTH];
+    GetCmdArg(1, szMapName, sizeof(szMapName));
 
-	SetTrieValue(g_hStaticTankMaps, sMapName, true);
+    SetTrieValue(g_hStaticTankMaps, szMapName, true);
 
-	return Plugin_Handled;
+    return Plugin_Handled;
 }
 
 Action Cmd_AddStaticWitchMap(int args)
 {
-	char sMapName[64]; GetCmdArg(1, sMapName, sizeof(sMapName));
+    char szMapName[MAX_MAP_NAME_LENGTH];
+    GetCmdArg(1, szMapName, sizeof(szMapName));
 
-	SetTrieValue(g_hStaticWitchMaps, sMapName, true);
+    SetTrieValue(g_hStaticWitchMaps, szMapName, true);
 
-	return Plugin_Handled;
+    return Plugin_Handled;
 }
 
 Action Cmd_ResetStaticMaps(int args)
 {
-	ClearTrie(g_hStaticWitchMaps);
-	ClearTrie(g_hStaticTankMaps);
+    ClearTrie(g_hStaticWitchMaps);
+    ClearTrie(g_hStaticTankMaps);
 
-	return Plugin_Handled;
+    return Plugin_Handled;
 }
 
-bool IsValidTankFlow(int iFlow) {
-	return g_bValidTankFlow[iFlow - 1];
+bool IsAvaibleBossFlow(Boss boss, int iFlow) {
+    return g_bAvaibleBossFlow[boss][iFlow - 1];
 }
 
-bool IsValidWitchFlow(int iFlow) {
-	return g_bValidWitchFlow[iFlow - 1];
-}
-
-void SetValidTankFlow(int iFlow, bool bValue) {
-	g_bValidTankFlow[iFlow - 1] = bValue;
-}
-
-void SetValidWitchFlow(int iFlow, bool bValue) {
-	g_bValidWitchFlow[iFlow - 1] = bValue;
+void SetAvaibleBossFlow(Boss boss, int iFlow, bool bValue) {
+    g_bAvaibleBossFlow[boss][iFlow - 1] = bValue;
 }
 
 bool IsValidFlow(int iFlow) {
-	return (iFlow > 0 && iFlow <= MAX_FLOW);
+    return (iFlow >= MIN_FLOW && iFlow <= MAX_FLOW);
 }
 
-bool IsValidConVarFlow(int iFlow)
-{
-	int iMinFlow = RoundToCeil(GetConVarFloat(g_cvVsBossFlowMin) * 100.0);
-	int iMaxFlow = RoundToFloor(GetConVarFloat(g_cvVsBossFlowMax) * 100.0);
-
-	return (iFlow >= iMinFlow && iFlow <= iMaxFlow);
+bool IsValidBossFlow(int iFlow) {
+    return (iFlow >= CVAR_MIN_FLOW && iFlow <= CVAR_MAX_FLOW);
 }
 
 int GetRandomTankFlow()
 {
-	int iTankFlow = 0;
+    int iTankFlow = 0;
 
-	Handle hValidTankFlow = CreateArray();
+    Handle hValidTankFlow = CreateArray();
 
-	int iMinFlow = RoundToCeil(GetConVarFloat(g_cvVsBossFlowMin) * 100.0);
-	int iMaxFlow = RoundToFloor(GetConVarFloat(g_cvVsBossFlowMax) * 100.0);
+    int iMinFlow = CVAR_MIN_FLOW;
+    int iMaxFlow = CVAR_MAX_FLOW;
 
-	for (int iFlow = iMinFlow + 1; iFlow <= iMaxFlow - 1; iFlow ++)
-	{
-		if (!IsValidTankFlow(iFlow)) {
-			continue;
-		}
+    for (int iFlow = iMinFlow + 1; iFlow <= iMaxFlow - 1; iFlow ++)
+    {
+        if (!IsAvaibleBossFlow(Boss_Tank, iFlow)) {
+            continue;
+        }
 
-		PushArrayCell(hValidTankFlow, iFlow);
-	}
+        PushArrayCell(hValidTankFlow, iFlow);
+    }
 
-	int iArraySize = GetArraySize(hValidTankFlow);
+    int iArraySize = GetArraySize(hValidTankFlow);
 
-	if (iArraySize > 0) {
-		iTankFlow = GetArrayCell(hValidTankFlow, GetRandomInt(0, iArraySize - 1));
-	}
+    if (iArraySize > 0) {
+        iTankFlow = GetArrayCell(hValidTankFlow, GetRandomInt(0, iArraySize - 1));
+    }
 
-	CloseHandle(hValidTankFlow);
+    CloseHandle(hValidTankFlow);
 
-	return iTankFlow;
+    return iTankFlow;
 }
 
 int GetRandomWitchFlow()
 {
-	int iWitchFlow = 0;
+    int iWitchFlow = 0;
 
-	Handle hValidWitchFlow = CreateArray();
+    Handle hValidWitchFlow = CreateArray();
 
-	int iMinFlow = RoundToCeil(GetConVarFloat(g_cvVsBossFlowMin) * 100.0);
-	int iMaxFlow = RoundToFloor(GetConVarFloat(g_cvVsBossFlowMax) * 100.0);
+    int iMinFlow = CVAR_MIN_FLOW;
+    int iMaxFlow = CVAR_MAX_FLOW;
 
-	for (int iFlow = iMinFlow; iFlow < iMaxFlow; iFlow ++)
-	{
-		if (!IsValidWitchFlow(iFlow)) {
-			continue;
-		}
+    for (int iFlow = iMinFlow; iFlow < iMaxFlow; iFlow ++)
+    {
+        if (!IsAvaibleBossFlow(Boss_Witch, iFlow)) {
+            continue;
+        }
 
-		PushArrayCell(hValidWitchFlow, iFlow);
-	}
+        PushArrayCell(hValidWitchFlow, iFlow);
+    }
 
-	int iArraySize = GetArraySize(hValidWitchFlow);
+    int iArraySize = GetArraySize(hValidWitchFlow);
 
-	if (iArraySize > 0) {
-		iWitchFlow = GetArrayCell(hValidWitchFlow, GetRandomInt(0, iArraySize - 1));
-	}
+    if (iArraySize > 0) {
+        iWitchFlow = GetArrayCell(hValidWitchFlow, GetRandomInt(0, iArraySize - 1));
+    }
 
-	CloseHandle(hValidWitchFlow);
+    CloseHandle(hValidWitchFlow);
 
-	return iWitchFlow;
+    return iWitchFlow;
 }
 
-bool IsStaticTankMap(const char[] sMapName)
+bool IsMapWithStaticBossSpawn(Boss boss, const char[] szMapName)
 {
-	bool dummy;
-	return GetTrieValue(g_hStaticTankMaps, sMapName, dummy);
+    bool dummy;
+
+    switch (boss)
+    {
+        case Boss_Tank: GetTrieValue(g_hStaticTankMaps, szMapName, dummy);
+        case Boss_Witch: GetTrieValue(g_hStaticWitchMaps, szMapName, dummy);
+    }
+
+    return false;
 }
 
-bool IsStaticWitchMap(const char[] sMapName)
+void SetTankFlow(int iFlow)
 {
-	bool dummy;
-	return GetTrieValue(g_hStaticWitchMaps, sMapName, dummy);
+    if (iFlow == 0)
+    {
+        L4D2Direct_SetVSTankFlowPercent(0, 0.0);
+        L4D2Direct_SetVSTankFlowPercent(1, 0.0);
+        L4D2Direct_SetVSTankToSpawnThisRound(0, false);
+        L4D2Direct_SetVSTankToSpawnThisRound(1, false);
+    }
+
+    else
+    {
+        float fPersent = float(iFlow) / 100.0;
+        L4D2Direct_SetVSTankFlowPercent(0, fPersent);
+        L4D2Direct_SetVSTankFlowPercent(1, fPersent);
+        L4D2Direct_SetVSTankToSpawnThisRound(0, true);
+        L4D2Direct_SetVSTankToSpawnThisRound(1, true);
+    }
 }
 
-void SetTankFlowPercent(int iFlow)
+void SetWitchFlow(int iFlow)
 {
-	if (iFlow == 0) {
-		L4D2Direct_SetVSTankFlowPercent(0, 0.0);
-		L4D2Direct_SetVSTankFlowPercent(1, 0.0);
-		L4D2Direct_SetVSTankToSpawnThisRound(0, false);
-		L4D2Direct_SetVSTankToSpawnThisRound(1, false);
-	}
+    if (iFlow == 0)
+    {
+        L4D2Direct_SetVSWitchFlowPercent(0, 0.0);
+        L4D2Direct_SetVSWitchFlowPercent(1, 0.0);
+        L4D2Direct_SetVSWitchToSpawnThisRound(0, false);
+        L4D2Direct_SetVSWitchToSpawnThisRound(1, false);
+    }
 
-	else
-	{
-		float fPersent = (float(iFlow) / 100.0);
-		L4D2Direct_SetVSTankFlowPercent(0, fPersent);
-		L4D2Direct_SetVSTankFlowPercent(1, fPersent);
-		L4D2Direct_SetVSTankToSpawnThisRound(0, true);
-		L4D2Direct_SetVSTankToSpawnThisRound(1, true);
-	}
-}
-
-void SetWitchFlowPercent(int iFlow)
-{
-	if (iFlow == 0)
-	{
-		L4D2Direct_SetVSWitchFlowPercent(0, 0.0);
-		L4D2Direct_SetVSWitchFlowPercent(1, 0.0);
-		L4D2Direct_SetVSWitchToSpawnThisRound(0, false);
-		L4D2Direct_SetVSWitchToSpawnThisRound(1, false);
-	}
-
-	else
-	{
-		float fPersent = (float(iFlow) / 100.0);
-
-		L4D2Direct_SetVSWitchFlowPercent(0, fPersent);
-		L4D2Direct_SetVSWitchFlowPercent(1, fPersent);
-		L4D2Direct_SetVSWitchToSpawnThisRound(0, true);
-		L4D2Direct_SetVSWitchToSpawnThisRound(1, true);
-	}
+    else
+    {
+        float fPersent = float(iFlow) / 100.0;
+        L4D2Direct_SetVSWitchFlowPercent(0, fPersent);
+        L4D2Direct_SetVSWitchFlowPercent(1, fPersent);
+        L4D2Direct_SetVSWitchToSpawnThisRound(0, true);
+        L4D2Direct_SetVSWitchToSpawnThisRound(1, true);
+    }
 }
 
 void InvalidFlowByFile(const char[] sFileName)
 {
-	File hFile = OpenFile(sFileName, "rt");
+    File hFile = OpenFile(sFileName, "rt");
 
-	if (!hFile)
-	{
-		LogMessage("Could not open file \"%s\"", sFileName);
-		return;
-	}
+    if (!hFile)
+    {
+        LogMessage("Could not open file \"%s\"", sFileName);
+        return;
+    }
 
-	char sLine[256];
+    char sLine[256];
 
-	while (!hFile.EndOfFile())
-	{
+    while (!hFile.EndOfFile())
+    {
 
-		if (!hFile.ReadLine(sLine, sizeof(sLine))) {
-			break;
-		}
+        if (!hFile.ReadLine(sLine, sizeof(sLine))) {
+            break;
+        }
 
-		int iLineLength = strlen(sLine);
+        int iLineLength = strlen(sLine);
 
-		for (int iChar = 0; iChar < iLineLength; iChar++)
-		{
-			if (sLine[iChar] == '/' && iChar != iLineLength - 1 && sLine[iChar + 1] == '/')
-			{
-				sLine[iChar] = '\0';
-				break;
-			}
-		}
+        for (int iChar = 0; iChar < iLineLength; iChar++)
+        {
+            if (sLine[iChar] == '/' && iChar != iLineLength - 1 && sLine[iChar + 1] == '/')
+            {
+                sLine[iChar] = '\0';
+                break;
+            }
+        }
 
-		TrimString(sLine);
+        TrimString(sLine);
 
-		if ((sLine[0] == '/' && sLine[1] == '/') || (sLine[0] == '\0')) {
-			continue;
-		}
+        if ((sLine[0] == '/' && sLine[1] == '/') || (sLine[0] == '\0')) {
+            continue;
+        }
 
-		ReadLine(sLine);
-	}
+        ReadLine(sLine);
+    }
 
-	hFile.Close();
+    hFile.Close();
 }
 
 void ReadLine(const char[] sLine)
 {
-	int iPos = 0;
+    int iPos = 0;
 
-	char sTarget[16];
-	iPos += BreakString(sLine[iPos], sTarget, sizeof(sTarget));
+    char sTarget[16];
+    iPos += BreakString(sLine[iPos], sTarget, sizeof(sTarget));
 
-	char sType[16];
-	iPos += BreakString(sLine[iPos], sType, sizeof(sType));
+    char sType[16];
+    iPos += BreakString(sLine[iPos], sType, sizeof(sType));
 
-	if (StrEqual(sType, "element"))
-	{
-		char sValue[16];
-		iPos += BreakString(sLine[iPos], sValue, sizeof(sValue));
+    if (StrEqual(sType, "interval"))
+    {
+        char sValueStart[16], sValueEnd[16];
+        iPos += BreakString(sLine[iPos], sValueStart, sizeof(sValueStart));
+        iPos += BreakString(sLine[iPos], sValueEnd, sizeof(sValueEnd));
 
-		int iFlow = StringToInt(sValue);
+        int iFlowStart = StringToInt(sValueStart);
+        int iFlowEnd = StringToInt(sValueEnd);
 
-		if (!IsValidFlow(iFlow)) {
-			return;
-		}
+        if (!IsValidFlow(iFlowStart) || !IsValidFlow(iFlowEnd)) {
+            return;
+        }
 
-		if (StrEqual(sTarget, "tank")) {
-			SetValidTankFlow(iFlow, false);
-		}
+        if (StrEqual(sTarget, "tank"))
+        {
+            for (int iFlow = iFlowStart; iFlow <= iFlowEnd; iFlow ++)
+            {
+                SetAvaibleBossFlow(Boss_Tank, iFlow, false);
+            }
+        }
 
-		else if (StrEqual(sTarget, "witch")) {
-			SetValidWitchFlow(iFlow, false);
-		}
-	}
-
-	else if (StrEqual(sType, "interval"))
-	{
-		char sValueStart[16], sValueEnd[16];
-		iPos += BreakString(sLine[iPos], sValueStart, sizeof(sValueStart));
-		iPos += BreakString(sLine[iPos], sValueEnd, sizeof(sValueEnd));
-
-		int iFlowStart = StringToInt(sValueStart);
-		int iFlowEnd = StringToInt(sValueEnd);
-
-		if (!IsValidFlow(iFlowStart) || !IsValidFlow(iFlowEnd)) {
-			return;
-		}
-
-		if (StrEqual(sTarget, "tank"))
-		{
-			for (int iFlow = iFlowStart; iFlow <= iFlowEnd; iFlow ++)
-			{
-				SetValidTankFlow(iFlow, false);
-			}
-		}
-
-		else if (StrEqual(sTarget, "witch"))
-		{
-			for (int iFlow = iFlowStart; iFlow <= iFlowEnd; iFlow ++)
-			{
-				SetValidWitchFlow(iFlow, false);
-			}
-		}
-	}
+        else if (StrEqual(sTarget, "witch"))
+        {
+            for (int iFlow = iFlowStart; iFlow <= iFlowEnd; iFlow ++)
+            {
+                SetAvaibleBossFlow(Boss_Witch, iFlow, false);
+            }
+        }
+    }
 }
 
 /**
@@ -501,9 +456,9 @@ void ReadLine(const char[] sLine)
  * @return                  Returns true if is second round, otherwise false.
  */
 bool InSecondHalfOfRound() {
-	return view_as<bool>(GameRules_GetProp("m_bInSecondHalfOfRound"));
+    return view_as<bool>(GameRules_GetProp("m_bInSecondHalfOfRound"));
 }
 
 int abs(int value) {
-	return (value < 0) ? -value : value;
+    return (value < 0) ? -value : value;
 }

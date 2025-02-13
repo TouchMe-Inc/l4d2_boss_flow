@@ -3,91 +3,66 @@
 #endif
 #define _boss_flow_included
 
+enum Boss
+{
+    Boss_Tank,
+    Boss_Witch,
+    BOSS_SIZE
+}
 
-native bool IsTankSpawnAllow();
-
-native bool IsWitchSpawnAllow();
-
-/**
- * @brief Check if the current map contains a static witch spawn.
- * @remarks Map string will be converted to lowercase internally.
- *
- * @return					True on contains a static spawn, false otherwise.
- */
-native bool IsStaticWitchMap();
+native bool IsBossSpawnAllowed(Boss boss);
 
 /**
- * @brief Check if the current map contains a static tank spawn.
- * @remarks Map string will be converted to lowercase internally.
+ * @brief Check if the current map contains a static boss spawn.
  *
- * @return					True on contains a static spawn, false otherwise.
+ * @return                  True on contains a static spawn, false otherwise.
  */
-native bool IsStaticTankMap();
-
-/**
- * @brief Validate the flow percentage of tank on current map.
- * @remarks Passing 0 is allowed and considered disabling.
- *
- * @param	iPercent		Flow percentage to check.
- *
- * @return					True on valid, false otherwise.
- */
-native bool IsValidTankFlowPercent(int iPercent);
+native bool IsMapWithStaticBossSpawn(Boss boss);
 
 /**
  * @brief Validate the flow percentage of witch on current map.
  * @remarks Passing 0 is allowed and considered disabling.
  *
- * @param	iPercent		Flow percentage to check.
+ * @param   iFlow           Flow percentage to check.
  *
- * @return					True on valid, false otherwise.
+ * @return					1 on avaible, 0 banned by config, -1 banned by cvar, -2 invalid flow.
  */
-native bool IsValidWitchFlowPercent(int iPercent);
+native int IsAvaibleBossFlow(Boss boss, int iFlow);
 
 /**
- * @brief Set the flow percentage of tank on current map.
- * @remarks Passing 0 is allowed and will disable flow tank.
+ * @brief Set the flow of boss on current map.
+ * @remarks Passing 0 is allowed and will disable flow boss.
  *
- * @param	iPercent	    Flow percentage to check.
+ * @param   iFlow           Flow percentage to check.
  */
-native void SetTankFlowPercent(int iPercent);
-
-native int GetTankFlowPercent();
+native void SetBossFlow(Boss boss, int iFlow);
 
 /**
- * @brief Set the flow percentage of witch on current map.
- * @remarks Passing 0 is allowed and will disable flow witch.
+ * @brief Get the flow of boss on current map.
  *
- * @param	iPercent		Flow percentage to check.
+ * @param   iFlow           Flow percentage to check.
  */
-native void SetWitchFlowPercent(int iPercent);
-
-native int GetWitchFlowPercent();
+native int GetBossFlow(Boss boss);
 
 
 public SharedPlugin __pl_boss_flow =
 {
-	name = "boss_flow",
-	file = "boss_flow.smx",
+    name = "boss_flow",
+    file = "boss_flow.smx",
 #if defined REQUIRE_PLUGIN
-	required = 1,
+    required = 1,
 #else
-	required = 0,
+    required = 0,
 #endif
 };
 
 #if !defined REQUIRE_PLUGIN
 public void __pl_boss_flow_SetNTVOptional()
 {
-	MarkNativeAsOptional("IsTankSpawnAllow");
-	MarkNativeAsOptional("IsWitchSpawnAllow");
-	MarkNativeAsOptional("IsStaticWitchMap");
-	MarkNativeAsOptional("IsStaticTankMap");
-	MarkNativeAsOptional("IsValidTankFlowPercent");
-	MarkNativeAsOptional("IsValidWitchFlowPercent");
-	MarkNativeAsOptional("SetTankFlowPercent");
-	MarkNativeAsOptional("GetTankFlowPercent");
-	MarkNativeAsOptional("SetWitchFlowPercent");
-	MarkNativeAsOptional("GetWitchFlowPercent");
+    MarkNativeAsOptional("IsBossSpawnAllowed");
+    MarkNativeAsOptional("IsMapWithStaticBossSpawn");
+    MarkNativeAsOptional("IsAvaibleBossFlow");
+    MarkNativeAsOptional("SetBossFlow");
+    MarkNativeAsOptional("GetBossFlow");
 }
 #endif

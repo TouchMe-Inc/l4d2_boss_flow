@@ -10,18 +10,15 @@
 
 public Plugin myinfo =
 {
-	name = "BossFlowVoteBoss",
-	author = "TouchMe",
-	description = "The plugin allows you to vote for the position of bosses",
-	version = "build0000",
-	url = "https://github.com/TouchMe-Inc/l4d2_boss_flow"
+    name        = "BossFlowVoteBoss",
+    author      = "TouchMe",
+    description = "The plugin allows you to vote for the position of bosses",
+    version     = "build_0001",
+    url         = "https://github.com/TouchMe-Inc/l4d2_boss_flow"
 }
 
 
 #define TRANSLATIONS            "bf_voteboss.phrases"
-
-#define MIN_FLOW 1
-#define MAX_FLOW 100
 
 #define TEAM_SPECTATE           1
 
@@ -29,8 +26,8 @@ public Plugin myinfo =
 
 
 int
-	g_iTankPercent = 0,
-	g_iWitchPercent = 0
+    g_iTargetTankFlow = 0,
+    g_iTargetWitchFlow = 0
 ;
 
 bool g_bRoundIsLive = false;
@@ -46,47 +43,39 @@ bool g_bRoundIsLive = false;
  */
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-	if (GetEngineVersion() != Engine_Left4Dead2)
-	{
-		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
-		return APLRes_SilentFailure;
-	}
+    if (GetEngineVersion() != Engine_Left4Dead2)
+    {
+        strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
+        return APLRes_SilentFailure;
+    }
 
-	return APLRes_Success;
+    return APLRes_Success;
 }
 
 public void OnPluginStart()
 {
-	// Load translations.
-	LoadTranslations(TRANSLATIONS);
+    // Load translations.
+    LoadTranslations(TRANSLATIONS);
 
-	// Event hooks.
-	HookEvent("round_start", Event_RoundStart, EventHookMode_PostNoCopy);
-	HookEvent("player_left_start_area", Event_LeftStartArea, EventHookMode_PostNoCopy);
-	HookEvent("round_end", Event_RoundEnd, EventHookMode_PostNoCopy);
+    // Event hooks.
+    HookEvent("round_start", Event_RoundStart, EventHookMode_PostNoCopy);
+    HookEvent("player_left_start_area", Event_LeftStartArea, EventHookMode_PostNoCopy);
 
-	RegConsoleCmd("sm_voteboss", Cmd_VoteBoss);
+    RegConsoleCmd("sm_voteboss", Cmd_VoteBoss);
 }
 
 /**
  * Round start event.
  */
 void Event_RoundStart(Event event, const char[] sName, bool bDontBroadcast) {
-	g_bRoundIsLive = false;
+    g_bRoundIsLive = false;
 }
 
 /**
  * Round start event.
  */
 void Event_LeftStartArea(Event event, const char[] sName, bool bDontBroadcast) {
-	g_bRoundIsLive = true;
-}
-
-/**
- * Round end event.
- */
-void Event_RoundEnd(Event event, const char[] sName, bool bDontBroadcast) {
-	g_bRoundIsLive = false;
+    g_bRoundIsLive = true;
 }
 
 /**
@@ -95,140 +84,139 @@ void Event_RoundEnd(Event event, const char[] sName, bool bDontBroadcast) {
  */
 Action Cmd_VoteBoss(int iClient, int iArgs)
 {
-	if (IsClientSpectator(iClient))
-	{
-		CPrintToChat(iClient, "%T%T", "TAG", iClient, "INVALID_TEAM", iClient);
-		return Plugin_Handled;
-	}
+    if (iArgs != 2)
+    {
+        CPrintToChat(iClient, "%T%T", "TAG", iClient, "INVALID_ARGS", iClient);
+        return Plugin_Handled;
+    }
 
-	if (iArgs != 2)
-	{
-		CPrintToChat(iClient, "%T%T", "TAG", iClient, "INVALID_ARGS", iClient);
-		return Plugin_Handled;
-	}
+    if (IsClientSpectator(iClient))
+    {
+        CPrintToChat(iClient, "%T%T", "TAG", iClient, "INVALID_TEAM", iClient);
+        return Plugin_Handled;
+    }
 
-	if (InSecondHalfOfRound())
-	{
-		CPrintToChat(iClient, "%T%T", "TAG", iClient, "INVALID_ROUND", iClient);
-		return Plugin_Handled;
-	}
+    if (InSecondHalfOfRound())
+    {
+        CPrintToChat(iClient, "%T%T", "TAG", iClient, "INVALID_ROUND", iClient);
+        return Plugin_Handled;
+    }
 
-	if (IsRoundStarted())
-	{
-		CPrintToChat(iClient, "%T%T", "TAG", iClient, "ROUND_STARTED", iClient);
-		return Plugin_Handled;
-	}
+    if (IsRoundStarted())
+    {
+        CPrintToChat(iClient, "%T%T", "TAG", iClient, "ROUND_STARTED", iClient);
+        return Plugin_Handled;
+    }
 
-	char sTankPercentParam[4]; GetCmdArg(1, sTankPercentParam, sizeof(sTankPercentParam));
-	char sWitchPercentParam[4]; GetCmdArg(2, sWitchPercentParam, sizeof(sWitchPercentParam));
+    char szTankFlow[4]; GetCmdArg(1, szTankFlow, sizeof(szTankFlow));
+    char szWitchFlow[4]; GetCmdArg(2, szWitchFlow, sizeof(szWitchFlow));
 
-	int iTankPercent = (sTankPercentParam[0] == '-' || !IsTankSpawnAllow()) ? -1 : 0;
-	int iWitchPercent = (sWitchPercentParam[0] == '-' || !IsWitchSpawnAllow()) ? -1 : 0;
+    int iTankFlow = (szTankFlow[0] == '-' || !IsBossSpawnAllowed(Boss_Tank)) ? -1 : 0;
+    int iWitchFlow = (szWitchFlow[0] == '-' || !IsBossSpawnAllowed(Boss_Witch)) ? -1 : 0;
 
-	char sErrorMessage[192];
+    char szErrorMessage[192];
+    Handle hErrorMessages = CreateArray(ByteCountToCells(sizeof(szErrorMessage)));
 
-	Handle hErrorMessages = CreateArray(ByteCountToCells(sizeof(sErrorMessage)));
+    if (iTankFlow != -1 && !IsMapWithStaticBossSpawn(Boss_Tank))
+    {
+        iTankFlow = StringToInt(szTankFlow);
 
-	if (iTankPercent != -1 && !IsStaticTankMap())
-	{
-		iTankPercent = StringToInt(sTankPercentParam);
+        if (iTankFlow)
+        {
+            int iIsAvaibleTankFlow = IsAvaibleBossFlow(Boss_Tank, iTankFlow);
 
-		if (iTankPercent)
-		{
-			if (!IsValidPercent(iTankPercent))
-			{
-				FormatEx(sErrorMessage, sizeof(sErrorMessage), "%T", "INVALID_TANK_PERCENT", iClient);
-				PushArrayString(hErrorMessages, sErrorMessage);
-			}
+            if (iIsAvaibleTankFlow == -2)
+            {
+                FormatEx(szErrorMessage, sizeof(szErrorMessage), "%T", "INVALID_TANK_PERCENT", iClient);
+                PushArrayString(hErrorMessages, szErrorMessage);
+            }
 
-			else if (!IsValidTankFlowPercent(iTankPercent))
-			{
-				FormatEx(sErrorMessage, sizeof(sErrorMessage), "%T", "INVALID_TANK_FLOW", iClient, iTankPercent);
-				PushArrayString(hErrorMessages, sErrorMessage);
-			}
-		}
-	}
+            else if (iIsAvaibleTankFlow != 1)
+            {
+                FormatEx(szErrorMessage, sizeof(szErrorMessage), "%T", "INVALID_TANK_FLOW", iClient, iTankFlow);
+                PushArrayString(hErrorMessages, szErrorMessage);
+            }
+        }
+    }
 
-	if (iWitchPercent != -1 && !IsStaticWitchMap())
-	{
-		iWitchPercent = StringToInt(sWitchPercentParam);
+    if (iWitchFlow != -1 && !IsMapWithStaticBossSpawn(Boss_Witch))
+    {
+        iWitchFlow = StringToInt(szWitchFlow);
 
-		if (iWitchPercent)
-		{
-			if (!IsValidPercent(iWitchPercent))
-			{
-				FormatEx(sErrorMessage, sizeof(sErrorMessage), "%T", "INVALID_WITCH_PERCENT", iClient);
-				PushArrayString(hErrorMessages, sErrorMessage);
-			}
+        if (iWitchFlow)
+        {
+            int iIsAvaibleWitchFlow = IsAvaibleBossFlow(Boss_Witch, iWitchFlow);
 
-			else if (!IsValidWitchFlowPercent(iWitchPercent))
-			{
-				FormatEx(sErrorMessage, sizeof(sErrorMessage), "%T", "INVALID_WITCH_FLOW", iClient, iWitchPercent);
-				PushArrayString(hErrorMessages, sErrorMessage);
-			}
-		}
-	}
+            if (iIsAvaibleWitchFlow == -2)
+            {
+                FormatEx(szErrorMessage, sizeof(szErrorMessage), "%T", "INVALID_WITCH_PERCENT", iClient);
+                PushArrayString(hErrorMessages, szErrorMessage);
+            }
 
-	if (iTankPercent == iWitchPercent && iTankPercent > 0 && iWitchPercent > 0)
-	{
-		FormatEx(sErrorMessage, sizeof(sErrorMessage), "%T", "INVALID_BOSS_POINT", iClient);
-		PushArrayString(hErrorMessages, sErrorMessage);
-	}
+            else if (iIsAvaibleWitchFlow != 1)
+            {
+                FormatEx(szErrorMessage, sizeof(szErrorMessage), "%T", "INVALID_WITCH_FLOW", iClient, iWitchFlow);
+                PushArrayString(hErrorMessages, szErrorMessage);
+            }
+        }
+    }
 
-	int iArraySize = GetArraySize(hErrorMessages);
+    if (iTankFlow == iWitchFlow && iTankFlow > 0 && iWitchFlow > 0)
+    {
+        FormatEx(szErrorMessage, sizeof(szErrorMessage), "%T", "INVALID_BOSS_POINT", iClient);
+        PushArrayString(hErrorMessages, szErrorMessage);
+    }
 
-	if (iArraySize)
-	{
-		char sBracketStart[16]; FormatEx(sBracketStart, sizeof(sBracketStart), "%T", "BRACKET_START", iClient);
-		char sBracketMiddle[16]; FormatEx(sBracketMiddle, sizeof(sBracketMiddle), "%T", "BRACKET_MIDDLE", iClient);
-		char sBracketEnd[16]; FormatEx(sBracketEnd, sizeof(sBracketEnd), "%T", "BRACKET_END", iClient);
+    int iArraySize = GetArraySize(hErrorMessages);
 
-		CPrintToChat(iClient, "%s%T", sBracketStart, "TAG", iClient);
+    if (iArraySize)
+    {
+        CPrintToChat(iClient, "%T%T", "BRACKET_START", iClient, "TAG", iClient);
 
-		for (int iIndex = 0; iIndex < iArraySize; iIndex ++)
-		{
-			GetArrayString(hErrorMessages, iIndex, sErrorMessage, sizeof(sErrorMessage));
-			CPrintToChat(iClient, "%s%s", (iIndex + 1) == iArraySize ? sBracketEnd : sBracketMiddle, sErrorMessage);
-		}
+        for (int iIndex = 0; iIndex < iArraySize; iIndex ++)
+        {
+            GetArrayString(hErrorMessages, iIndex, szErrorMessage, sizeof(szErrorMessage));
+            CPrintToChat(iClient, "%T%s", (iIndex + 1) == iArraySize ? "BRACKET_END" : "BRACKET_MIDDLE", iClient, szErrorMessage);
+        }
 
-		CloseHandle(hErrorMessages);
-		return Plugin_Handled;
-	}
+        CloseHandle(hErrorMessages);
+        return Plugin_Handled;
+    }
 
-	CloseHandle(hErrorMessages);
+    CloseHandle(hErrorMessages);
 
-	RunVoteBoss(iClient, iTankPercent, iWitchPercent);
+    RunVoteBoss(iClient, iTankFlow, iWitchFlow);
 
-	return Plugin_Handled;
+    return Plugin_Handled;
 }
 
-void RunVoteBoss(int iClient, int iTankPercent, int iWitchPercent)
+void RunVoteBoss(int iClient, int iTankFlow, int iWitchFlow)
 {
-	if (!NativeVotes_IsNewVoteAllowed())
-	{
-		CPrintToChat(iClient, "%T%T", "TAG", iClient, "VOTE_COULDOWN", iClient, NativeVotes_CheckVoteDelay());
-		return;
-	}
+    if (!NativeVotes_IsNewVoteAllowed())
+    {
+        CPrintToChat(iClient, "%T%T", "TAG", iClient, "VOTE_COULDOWN", iClient, NativeVotes_CheckVoteDelay());
+        return;
+    }
 
-	int iTotalPlayers;
-	int[] iPlayers = new int[MaxClients];
+    int iTotalPlayers;
+    int[] iPlayers = new int[MaxClients];
 
-	for (int iPlayer = 1; iPlayer <= MaxClients; iPlayer ++)
-	{
-		if (!IsClientInGame(iPlayer) || IsFakeClient(iPlayer) || IsClientSpectator(iPlayer)) {
-			continue;
-		}
+    for (int iPlayer = 1; iPlayer <= MaxClients; iPlayer ++)
+    {
+        if (!IsClientInGame(iPlayer) || IsFakeClient(iPlayer) || IsClientSpectator(iPlayer)) {
+            continue;
+        }
 
-		iPlayers[iTotalPlayers++] = iPlayer;
-	}
+        iPlayers[iTotalPlayers++] = iPlayer;
+    }
 
-	g_iTankPercent = iTankPercent;
-	g_iWitchPercent = iWitchPercent;
+    g_iTargetTankFlow = iTankFlow;
+    g_iTargetWitchFlow = iWitchFlow;
 
-	NativeVote hVote = new NativeVote(HandlerVoteBoss, NativeVotesType_Custom_YesNo);
-	hVote.Initiator = iClient;
+    NativeVote hVote = new NativeVote(HandlerVoteBoss, NativeVotesType_Custom_YesNo);
+    hVote.Initiator = iClient;
 
-	hVote.DisplayVote(iPlayers, iTotalPlayers, VOTE_TIME);
+    hVote.DisplayVote(iPlayers, iTotalPlayers, VOTE_TIME);
 }
 
 /**
@@ -241,82 +229,75 @@ void RunVoteBoss(int iClient, int iTankPercent, int iWitchPercent)
  */
 Action HandlerVoteBoss(NativeVote hVote, VoteAction tAction, int iParam1, int iParam2)
 {
-	switch (tAction)
-	{
-		case VoteAction_Display:
-		{
-			char sVoteDisplayMessage[128];
-			char sTankPercent[32], sWitchPercent[32];
+    switch (tAction)
+    {
+        case VoteAction_Display:
+        {
+            char sVoteDisplayMessage[128];
+            char sTankPercent[32], sWitchPercent[32];
 
-			if (g_iTankPercent == -1) {
-				FormatEx(sTankPercent, sizeof(sTankPercent), "%T", "IGNORED", iParam1);
-			} else if (IsStaticTankMap()) {
-				FormatEx(sTankPercent, sizeof(sTankPercent), "%T", "STATIC", iParam1);
-			} else if (g_iTankPercent == 0) {
-				FormatEx(sTankPercent, sizeof(sTankPercent), "%T", "DISABLE", iParam1);
-			} else {
-				FormatEx(sTankPercent, sizeof(sTankPercent), "%d", g_iTankPercent);
-			}
+            if (g_iTargetTankFlow == -1) {
+                FormatEx(sTankPercent, sizeof(sTankPercent), "%T", "IGNORED", iParam1);
+            } else if (IsMapWithStaticBossSpawn(Boss_Tank)) {
+                FormatEx(sTankPercent, sizeof(sTankPercent), "%T", "STATIC", iParam1);
+            } else if (g_iTargetTankFlow == 0) {
+                FormatEx(sTankPercent, sizeof(sTankPercent), "%T", "DISABLE", iParam1);
+            } else {
+                FormatEx(sTankPercent, sizeof(sTankPercent), "%d", g_iTargetTankFlow);
+            }
 
-			if (g_iWitchPercent == -1) {
-				FormatEx(sWitchPercent, sizeof(sWitchPercent), "%T", "IGNORED", iParam1);
-			} else if (IsStaticWitchMap()) {
-				FormatEx(sWitchPercent, sizeof(sWitchPercent), "%T", "STATIC", iParam1);
-			} else if (g_iWitchPercent == 0) {
-				FormatEx(sWitchPercent, sizeof(sWitchPercent), "%T", "DISABLE", iParam1);
-			} else {
-				FormatEx(sWitchPercent, sizeof(sWitchPercent), "%d", g_iWitchPercent);
-			}
+            if (g_iTargetWitchFlow == -1) {
+                FormatEx(sWitchPercent, sizeof(sWitchPercent), "%T", "IGNORED", iParam1);
+            } else if (IsMapWithStaticBossSpawn(Boss_Witch)) {
+                FormatEx(sWitchPercent, sizeof(sWitchPercent), "%T", "STATIC", iParam1);
+            } else if (g_iTargetWitchFlow == 0) {
+                FormatEx(sWitchPercent, sizeof(sWitchPercent), "%T", "DISABLE", iParam1);
+            } else {
+                FormatEx(sWitchPercent, sizeof(sWitchPercent), "%d", g_iTargetWitchFlow);
+            }
 
-			FormatEx(sVoteDisplayMessage, sizeof(sVoteDisplayMessage), "%T", "VOTE_TITLE", iParam1, sTankPercent, sWitchPercent);
+            FormatEx(sVoteDisplayMessage, sizeof(sVoteDisplayMessage), "%T", "VOTE_TITLE", iParam1, sTankPercent, sWitchPercent);
 
-			hVote.SetDetails(sVoteDisplayMessage);
+            hVote.SetDetails(sVoteDisplayMessage);
 
-			return Plugin_Changed;
-		}
+            return Plugin_Changed;
+        }
 
-		case VoteAction_Cancel: {
-			hVote.DisplayFail();
-		}
+        case VoteAction_Cancel: {
+            hVote.DisplayFail();
+        }
 
-		case VoteAction_Finish:
-		{
-			if (iParam1 == NATIVEVOTES_VOTE_NO || IsRoundStarted())
-			{
-				hVote.DisplayFail();
+        case VoteAction_Finish:
+        {
+            if (iParam1 == NATIVEVOTES_VOTE_NO || IsRoundStarted())
+            {
+                hVote.DisplayFail();
 
-				return Plugin_Continue;
-			}
+                return Plugin_Continue;
+            }
 
-			if (g_iTankPercent != -1 && !IsStaticTankMap()) {
-				SetTankFlowPercent(g_iTankPercent);
-			}
+            if (g_iTargetTankFlow != -1 && !IsMapWithStaticBossSpawn(Boss_Tank)) {
+                SetBossFlow(Boss_Tank, g_iTargetTankFlow);
+            }
 
-			if (g_iWitchPercent != -1 && !IsStaticWitchMap()) {
-				SetWitchFlowPercent(g_iWitchPercent);
-			}
+            if (g_iTargetWitchFlow != -1 && !IsMapWithStaticBossSpawn(Boss_Witch)) {
+                SetBossFlow(Boss_Witch, g_iTargetWitchFlow);
+            }
 
-			hVote.DisplayPass();
-		}
+            hVote.DisplayPass();
+        }
 
-		case VoteAction_End: hVote.Close();
-	}
+        case VoteAction_End: hVote.Close();
+    }
 
-	return Plugin_Continue;
+    return Plugin_Continue;
 }
 
 /**
  *
  */
 bool IsRoundStarted() {
-	return g_bRoundIsLive;
-}
-
-/**
- *
- */
-bool IsValidPercent(int iPercent) {
-	return iPercent >= MIN_FLOW && iPercent <= MAX_FLOW;
+    return g_bRoundIsLive;
 }
 
 /**
@@ -325,12 +306,12 @@ bool IsValidPercent(int iPercent) {
  * @return                  Returns true if is second round, otherwise false.
  */
 bool InSecondHalfOfRound() {
-	return view_as<bool>(GameRules_GetProp("m_bInSecondHalfOfRound"));
+    return view_as<bool>(GameRules_GetProp("m_bInSecondHalfOfRound"));
 }
 
 /**
  *
  */
 bool IsClientSpectator(int iClient) {
-	return (GetClientTeam(iClient) == TEAM_SPECTATE);
+    return (GetClientTeam(iClient) == TEAM_SPECTATE);
 }

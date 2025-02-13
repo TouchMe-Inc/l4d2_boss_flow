@@ -8,16 +8,17 @@
 
 
 public Plugin myinfo = {
-	name = "BossFlowShowPercent",
-	author = "TouchMe",
-	description = "Plugin displays boss locations",
-	version = "build0003",
-	url = "https://github.com/TouchMe-Inc/l4d2_boss_flow"
+    name        = "BossFlowShowPercent",
+    author      = "TouchMe",
+    description = "Plugin displays boss locations",
+    version     = "build0004",
+    url         = "https://github.com/TouchMe-Inc/l4d2_boss_flow"
 }
 
 
 #define TRANSLATIONS            "bf_show_percent.phrases"
 
+#define MIN_FLOW                1
 
 ConVar g_cvVsBossBuffer = null;
 
@@ -33,89 +34,93 @@ ConVar g_cvVsBossBuffer = null;
  */
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-	if (GetEngineVersion() != Engine_Left4Dead2)
-	{
-		strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
-		return APLRes_SilentFailure;
-	}
+    if (GetEngineVersion() != Engine_Left4Dead2)
+    {
+        strcopy(error, err_max, "Plugin only supports Left 4 Dead 2.");
+        return APLRes_SilentFailure;
+    }
 
-	return APLRes_Success;
+    return APLRes_Success;
 }
 
 public void OnPluginStart()
 {
-	// Load translations.
-	LoadTranslations(TRANSLATIONS);
+    // Load translations.
+    LoadTranslations(TRANSLATIONS);
 
-	g_cvVsBossBuffer = FindConVar("versus_boss_buffer");
+    g_cvVsBossBuffer = FindConVar("versus_boss_buffer");
 
-	RegConsoleCmd("sm_boss", Cmd_Boss);
-	RegConsoleCmd("sm_tank", Cmd_Boss);
-	RegConsoleCmd("sm_witch", Cmd_Boss);
-	RegConsoleCmd("sm_current", Cmd_Boss);
+    RegConsoleCmd("sm_boss", Cmd_Boss);
+    RegConsoleCmd("sm_tank", Cmd_Boss);
+    RegConsoleCmd("sm_witch", Cmd_Boss);
+    RegConsoleCmd("sm_current", Cmd_Boss);
 }
 
 Action Cmd_Boss(int iClient, int iArgs)
 {
-	float fBossBuffer = GetConVarFloat(g_cvVsBossBuffer) / L4D2Direct_GetMapMaxFlowDistance();
+    if (!iClient) {
+        return Plugin_Continue;
+    }
 
-	CPrintToChat(iClient, "%T%T", "BRACKET_START", iClient, "TAG", iClient);
+    CPrintToChat(iClient, "%T%T", "BRACKET_START", iClient, "TAG", iClient);
 
-	if (IsTankSpawnAllow())
-	{
-		int iTankPercent = GetTankFlowPercent();
+    float fBossBuffer = GetConVarFloat(g_cvVsBossBuffer) / L4D2Direct_GetMapMaxFlowDistance();
 
-		if (IsStaticTankMap()) {
-			CPrintToChat(iClient, "%T%T", "BRACKET_MIDDLE", iClient, "TANK_STATIC", iClient);
-		}
+    if (IsBossSpawnAllowed(Boss_Tank))
+    {
+        int iTankFlow = GetBossFlow(Boss_Tank);
 
-		else if (iTankPercent == 0) {
-			CPrintToChat(iClient, "%T%T", "BRACKET_MIDDLE", iClient, "TANK_DISABLED", iClient);
-		}
+        if (IsMapWithStaticBossSpawn(Boss_Tank)) {
+            CPrintToChat(iClient, "%T%T", "BRACKET_MIDDLE", iClient, "TANK_STATIC", iClient);
+        }
 
-		else
-		{
-			int iTankTriggerPercent = iTankPercent - RoundToNearest(fBossBuffer * 100.0);
+        else if (iTankFlow == 0) {
+            CPrintToChat(iClient, "%T%T", "BRACKET_MIDDLE", iClient, "TANK_DISABLED", iClient);
+        }
 
-			if (iTankTriggerPercent < 0) {
-				iTankTriggerPercent = 1;
-			}
+        else
+        {
+            int iTankFlowTrigger = iTankFlow - RoundToNearest(fBossBuffer * 100.0);
 
-			CPrintToChat(iClient, "%T%T", "BRACKET_MIDDLE", iClient, "TANK_FLOW", iClient, iTankTriggerPercent, iTankPercent);
-		}
-	}
+            if (iTankFlowTrigger < 0) {
+                iTankFlowTrigger = MIN_FLOW;
+            }
 
-	if (IsWitchSpawnAllow())
-	{
-		int iWitchPercent = GetWitchFlowPercent();
+            CPrintToChat(iClient, "%T%T", "BRACKET_MIDDLE", iClient, "TANK_FLOW", iClient, iTankFlowTrigger, iTankFlow);
+        }
+    }
 
-		if (IsStaticWitchMap()) {
-			CPrintToChat(iClient, "%T%T", "BRACKET_MIDDLE", iClient, "WITCH_STATIC", iClient);
-		}
+    if (IsBossSpawnAllowed(Boss_Witch))
+    {
+        int iWitchFlow = GetBossFlow(Boss_Witch);
 
-		else if (iWitchPercent == 0) {
-			CPrintToChat(iClient, "%T%T", "BRACKET_MIDDLE", iClient, "WITCH_DISABLED", iClient);
-		}
+        if (IsMapWithStaticBossSpawn(Boss_Witch)) {
+            CPrintToChat(iClient, "%T%T", "BRACKET_MIDDLE", iClient, "WITCH_STATIC", iClient);
+        }
 
-		else
-		{
-			int iWitchTriggerPercent = iWitchPercent - RoundToNearest(fBossBuffer * 100.0);
+        else if (iWitchFlow == 0) {
+            CPrintToChat(iClient, "%T%T", "BRACKET_MIDDLE", iClient, "WITCH_DISABLED", iClient);
+        }
 
-			if (iWitchTriggerPercent < 0) {
-				iWitchTriggerPercent = 1;
-			}
+        else
+        {
+            int iWitchFlowTrigger = iWitchFlow - RoundToNearest(fBossBuffer * 100.0);
 
-			CPrintToChat(iClient, "%T%T", "BRACKET_MIDDLE", iClient, "WITCH_FLOW", iClient, iWitchTriggerPercent, iWitchPercent);
-		}
-	}
+            if (iWitchFlowTrigger < 0) {
+                iWitchFlowTrigger = MIN_FLOW;
+            }
 
-	CPrintToChat(iClient, "%T%T", "BRACKET_END", iClient, "SURVIVOR_FLOW", iClient, GetFurthestSurvivorFlowPercent());
+            CPrintToChat(iClient, "%T%T", "BRACKET_MIDDLE", iClient, "WITCH_FLOW", iClient, iWitchFlowTrigger, iWitchFlow);
+        }
+    }
 
-	return Plugin_Handled;
+    CPrintToChat(iClient, "%T%T", "BRACKET_END", iClient, "SURVIVOR_FLOW", iClient, GetFurthestSurvivorFlow());
+
+    return Plugin_Handled;
 }
 
-int GetFurthestSurvivorFlowPercent()
+int GetFurthestSurvivorFlow()
 {
-	int iFlow = RoundToCeil(100.0 * (L4D2_GetFurthestSurvivorFlow()) / L4D2Direct_GetMapMaxFlowDistance());
-	return iFlow < 100 ? iFlow : 100;
+    int iFlow = RoundToCeil(100.0 * (L4D2_GetFurthestSurvivorFlow()) / L4D2Direct_GetMapMaxFlowDistance());
+    return iFlow < 100 ? iFlow : 100;
 }
