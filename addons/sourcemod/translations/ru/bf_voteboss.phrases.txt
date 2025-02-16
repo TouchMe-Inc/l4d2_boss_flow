@@ -48,7 +48,7 @@
 	"INVALID_TANK_FLOW"
 	{
 		"#format"		"{1:d}"
-		"ru"			"Размещение танка в точке {olive}{1}{default} запрещено настройками сервера"
+		"ru"			"Размещение танка на {olive}{1}%%{default} запрещено настройками сервера"
 	}
 
 	"INVALID_WITCH_PERCENT"
@@ -59,7 +59,7 @@
 	"INVALID_WITCH_FLOW"
 	{
 		"#format"		"{1:d}"
-		"ru"			"Размещение ведьмы в точке {olive}{1}{default} запрещено настройками сервера"
+		"ru"			"Размещение ведьмы на {olive}{1}%%{default} запрещено настройками сервера"
 	}
 
 	"INVALID_BOSS_POINT"
