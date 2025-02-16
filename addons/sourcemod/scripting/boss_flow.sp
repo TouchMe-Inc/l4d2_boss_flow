@@ -166,16 +166,16 @@ public void OnMapInit(const char[] szMapName)
         SetAvaibleBossFlow(Boss_Tank, iFlow, true);
         SetAvaibleBossFlow(Boss_Witch, iFlow, true);
     }
-
-    char szPathToDir[PLATFORM_MAX_PATH], sPathToFile[PLATFORM_MAX_PATH];
-    GetConVarString(g_cvPathToDir, szPathToDir, sizeof(szPathToDir));
-    FormatEx(sPathToFile, sizeof(sPathToFile), "%s/%s.cfg", szPathToDir, szMapName);
-
-    BanFlowByFile(sPathToFile);
 }
 
 public void OnMapStart()
 {
+    char szPathToDir[PLATFORM_MAX_PATH], sPathToFile[PLATFORM_MAX_PATH];
+    GetConVarString(g_cvPathToDir, szPathToDir, sizeof(szPathToDir));
+    FormatEx(sPathToFile, sizeof(sPathToFile), "%s/%s.cfg", szPathToDir, g_szMapName);
+
+    BanFlowByFile(sPathToFile);
+
     int iAttemptsFindMaxInterval = GetConVarInt(g_cvAttemptsFindMaxInterval);
     int iTankFlow = GetRandomTankFlow();
     int iWitchFlow = GetRandomWitchFlow();
