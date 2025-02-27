@@ -319,8 +319,8 @@ bool IsMapWithStaticBossSpawn(Boss boss, const char[] szMapName)
 
     switch (boss)
     {
-        case Boss_Tank: GetTrieValue(g_hStaticTankMaps, szMapName, dummy);
-        case Boss_Witch: GetTrieValue(g_hStaticWitchMaps, szMapName, dummy);
+        case Boss_Tank: return GetTrieValue(g_hStaticTankMaps, szMapName, dummy);
+        case Boss_Witch: return GetTrieValue(g_hStaticWitchMaps, szMapName, dummy);
     }
 
     return false;
