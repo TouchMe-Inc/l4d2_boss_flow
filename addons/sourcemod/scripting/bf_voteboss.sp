@@ -112,7 +112,6 @@ Action Cmd_VoteBoss(int iClient, int iArgs)
     char szWitchFlow[4]; GetCmdArg(2, szWitchFlow, sizeof(szWitchFlow));
 
     int iTankFlow = (szTankFlow[0] == '-' || !IsBossSpawnAllowed(Boss_Tank)) ? -1 : 0;
-    int iWitchFlow = (szWitchFlow[0] == '-' || !IsBossSpawnAllowed(Boss_Witch)) ? -1 : 0;
 
     char szErrorMessage[192];
     Handle hErrorMessages = CreateArray(ByteCountToCells(sizeof(szErrorMessage)));
@@ -138,6 +137,8 @@ Action Cmd_VoteBoss(int iClient, int iArgs)
             }
         }
     }
+
+    int iWitchFlow = (szWitchFlow[0] == '-' || !IsBossSpawnAllowed(Boss_Witch)) ? -1 : 0;
 
     if (iWitchFlow != -1 && !IsMapWithStaticBossSpawn(Boss_Witch))
     {
@@ -233,32 +234,32 @@ Action HandlerVoteBoss(NativeVote hVote, VoteAction tAction, int iParam1, int iP
     {
         case VoteAction_Display:
         {
-            char sVoteDisplayMessage[128];
-            char sTankPercent[32], sWitchPercent[32];
+            char szVoteDisplayMessage[128];
+            char szTankPercent[32], szWitchPercent[32];
 
             if (g_iTargetTankFlow == -1) {
-                FormatEx(sTankPercent, sizeof(sTankPercent), "%T", "IGNORED", iParam1);
+                FormatEx(szTankPercent, sizeof(szTankPercent), "%T", "IGNORED", iParam1);
             } else if (IsMapWithStaticBossSpawn(Boss_Tank)) {
-                FormatEx(sTankPercent, sizeof(sTankPercent), "%T", "STATIC", iParam1);
+                FormatEx(szTankPercent, sizeof(szTankPercent), "%T", "STATIC", iParam1);
             } else if (g_iTargetTankFlow == 0) {
-                FormatEx(sTankPercent, sizeof(sTankPercent), "%T", "DISABLE", iParam1);
+                FormatEx(szTankPercent, sizeof(szTankPercent), "%T", "DISABLE", iParam1);
             } else {
-                FormatEx(sTankPercent, sizeof(sTankPercent), "%d", g_iTargetTankFlow);
+                FormatEx(szTankPercent, sizeof(szTankPercent), "%d", g_iTargetTankFlow);
             }
 
             if (g_iTargetWitchFlow == -1) {
-                FormatEx(sWitchPercent, sizeof(sWitchPercent), "%T", "IGNORED", iParam1);
+                FormatEx(szWitchPercent, sizeof(szWitchPercent), "%T", "IGNORED", iParam1);
             } else if (IsMapWithStaticBossSpawn(Boss_Witch)) {
-                FormatEx(sWitchPercent, sizeof(sWitchPercent), "%T", "STATIC", iParam1);
+                FormatEx(szWitchPercent, sizeof(szWitchPercent), "%T", "STATIC", iParam1);
             } else if (g_iTargetWitchFlow == 0) {
-                FormatEx(sWitchPercent, sizeof(sWitchPercent), "%T", "DISABLE", iParam1);
+                FormatEx(szWitchPercent, sizeof(szWitchPercent), "%T", "DISABLE", iParam1);
             } else {
-                FormatEx(sWitchPercent, sizeof(sWitchPercent), "%d", g_iTargetWitchFlow);
+                FormatEx(szWitchPercent, sizeof(szWitchPercent), "%d", g_iTargetWitchFlow);
             }
 
-            FormatEx(sVoteDisplayMessage, sizeof(sVoteDisplayMessage), "%T", "VOTE_TITLE", iParam1, sTankPercent, sWitchPercent);
+            FormatEx(szVoteDisplayMessage, sizeof(szVoteDisplayMessage), "%T", "VOTE_TITLE", iParam1, szTankPercent, szWitchPercent);
 
-            hVote.SetDetails(sVoteDisplayMessage);
+            hVote.SetDetails(szVoteDisplayMessage);
 
             return Plugin_Changed;
         }

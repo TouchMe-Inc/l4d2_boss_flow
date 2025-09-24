@@ -11,7 +11,7 @@ public Plugin myinfo = {
     name        = "BossFlowShowPercent",
     author      = "TouchMe",
     description = "Plugin displays boss locations",
-    version     = "build0004",
+    version     = "build0005",
     url         = "https://github.com/TouchMe-Inc/l4d2_boss_flow"
 }
 
@@ -20,6 +20,7 @@ public Plugin myinfo = {
 
 #define MIN_FLOW                1
 
+#define TEAM_SURVIVORS          2
 
 ConVar g_cvVsBossBuffer = null;
 
@@ -122,6 +123,23 @@ Action Cmd_Boss(int iClient, int iArgs)
 
 int GetFurthestSurvivorFlow()
 {
-    int iFlow = RoundToCeil(100.0 * (L4D2_GetFurthestSurvivorFlow()) / L4D2Direct_GetMapMaxFlowDistance());
+    int iFlow = RoundToCeil(100.0 * (GetMaxSurvivorCompletionFlow()) / L4D2Direct_GetMapMaxFlowDistance());
     return iFlow < 100 ? iFlow : 100;
+}
+
+float GetMaxSurvivorCompletionFlow()
+{
+	float flow = 0.0, tmp_flow = 0.0;
+	Address pNavArea;
+	for (int i = 1; i <= MaxClients; i++) {
+		if (IsClientInGame(i) && GetClientTeam(i) == TEAM_SURVIVORS && IsPlayerAlive(i)) {
+			pNavArea = L4D_GetLastKnownArea(i);
+			if (pNavArea != Address_Null) {
+				tmp_flow = L4D2Direct_GetTerrorNavAreaFlow(pNavArea);
+				flow = (flow > tmp_flow) ? flow : tmp_flow;
+			}
+		}
+	}
+
+	return flow;
 }
