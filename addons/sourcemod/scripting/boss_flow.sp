@@ -33,11 +33,6 @@ char g_szMapName[MAX_MAP_NAME_LENGTH];
 Handle g_hStaticBossMaps[BOSS_SIZE];
 Handle g_hBannedBossFlow[BOSS_SIZE];
 
-Handle
-    g_hStaticTankMaps = null,
-    g_hStaticWitchMaps = null
-;
-
 ConVar
     g_cvAttemptsFindMaxInterval = null,
     g_cvTankSpawnAllow = null,
@@ -267,8 +262,8 @@ Action Cmd_BanBossFlow(int args)
 
 Action Cmd_ResetBannedFlow(int args)
 {
-    ClearTrie(g_hStaticWitchMaps);
-    ClearTrie(g_hStaticTankMaps);
+    ClearTrie(g_hBannedBossFlow[Boss_Tank]);
+    ClearTrie(g_hBannedBossFlow[Boss_Witch]);
 
     return Plugin_Handled;
 }
